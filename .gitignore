@@ -1,0 +1,18 @@
+# Build artifacts
+*.monolith-backup
+test-run*.log
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# IDE
+.vscode/
+*.code-workspace
+
+# PowerShell
+*.psm1.bak
+
+# Temp
+*.tmp
+scratch/
