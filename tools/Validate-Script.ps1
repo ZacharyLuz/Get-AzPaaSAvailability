@@ -50,25 +50,35 @@ else {
 Write-Host "[2/4] PSScriptAnalyzer Linting..." -ForegroundColor Yellow
 
 $settingsPath = Join-Path $PSScriptRoot '..' 'PSScriptAnalyzerSettings.psd1'
-if (Get-Module PSScriptAnalyzer -ListAvailable) {
-    $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-    $results = Invoke-ScriptAnalyzer -Path $repoRoot -Recurse -Settings $settingsPath -ErrorAction SilentlyContinue
-    $warnings = @($results | Where-Object Severity -in 'Warning', 'Error')
-
-    if ($warnings.Count -eq 0) {
-        Write-Host "  PASS: No warnings or errors" -ForegroundColor Green
-        $passed++
-    }
-    else {
-        Write-Host "  FAIL: $($warnings.Count) issue(s):" -ForegroundColor Red
-        foreach ($w in $warnings) {
-            Write-Host "    $($w.ScriptName):$($w.Line) [$($w.RuleName)] $($w.Message)" -ForegroundColor Red
-        }
-        $failed++
-    }
+if (-not (Get-Module PSScriptAnalyzer -ListAvailable)) {
+    Write-Host "  SKIP: PSScriptAnalyzer not installed" -ForegroundColor DarkGray
+}
+elseif (-not (Test-Path -LiteralPath $settingsPath)) {
+    Write-Host "  FAIL: Settings file not found at '$settingsPath'" -ForegroundColor Red
+    $failed++
 }
 else {
-    Write-Host "  SKIP: PSScriptAnalyzer not installed" -ForegroundColor DarkGray
+    $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+    try {
+        $results = Invoke-ScriptAnalyzer -Path $repoRoot -Recurse -Settings $settingsPath -ErrorAction Stop
+        $warnings = @($results | Where-Object Severity -in 'Warning', 'Error')
+
+        if ($warnings.Count -eq 0) {
+            Write-Host "  PASS: No warnings or errors" -ForegroundColor Green
+            $passed++
+        }
+        else {
+            Write-Host "  FAIL: $($warnings.Count) issue(s):" -ForegroundColor Red
+            foreach ($w in $warnings) {
+                Write-Host "    $($w.ScriptName):$($w.Line) [$($w.RuleName)] $($w.Message)" -ForegroundColor Red
+            }
+            $failed++
+        }
+    }
+    catch {
+        Write-Host "  FAIL: Invoke-ScriptAnalyzer failed: $($_.Exception.Message)" -ForegroundColor Red
+        $failed++
+    }
 }
 #endregion
 
@@ -76,19 +86,28 @@ else {
 Write-Host "[3/4] Pester Tests..." -ForegroundColor Yellow
 
 $testsPath = Join-Path $PSScriptRoot '..' 'tests'
-if (Test-Path $testsPath) {
-    $pesterResults = Invoke-Pester -Path $testsPath -Output Minimal -PassThru
-    if ($pesterResults.FailedCount -eq 0) {
-        Write-Host "  PASS: $($pesterResults.PassedCount) tests passed" -ForegroundColor Green
-        $passed++
-    }
-    else {
-        Write-Host "  FAIL: $($pesterResults.FailedCount) test(s) failed" -ForegroundColor Red
-        $failed++
-    }
+if (-not (Test-Path $testsPath)) {
+    Write-Host "  SKIP: No tests directory found" -ForegroundColor DarkGray
+}
+elseif (-not (Get-Module Pester -ListAvailable)) {
+    Write-Host "  SKIP: Pester not installed" -ForegroundColor DarkGray
 }
 else {
-    Write-Host "  SKIP: No tests directory found" -ForegroundColor DarkGray
+    try {
+        $pesterResults = Invoke-Pester -Path $testsPath -Output Minimal -PassThru -ErrorAction Stop
+        if ($pesterResults.FailedCount -eq 0) {
+            Write-Host "  PASS: $($pesterResults.PassedCount) tests passed" -ForegroundColor Green
+            $passed++
+        }
+        else {
+            Write-Host "  FAIL: $($pesterResults.FailedCount) test(s) failed" -ForegroundColor Red
+            $failed++
+        }
+    }
+    catch {
+        Write-Host "  FAIL: Pester execution failed: $($_.Exception.Message)" -ForegroundColor Red
+        $failed++
+    }
 }
 #endregion
 
