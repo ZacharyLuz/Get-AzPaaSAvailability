@@ -11,6 +11,7 @@ param()
 $ErrorActionPreference = 'Continue'
 $failed = 0
 $passed = 0
+$skipped = 0
 
 Write-Host "`n=== Get-AzPaaSAvailability Validation ===" -ForegroundColor Cyan
 Write-Host ""
@@ -20,8 +21,22 @@ Write-Host "[1/4] Syntax Validation..." -ForegroundColor Yellow
 
 $scripts = @(
     (Join-Path $PSScriptRoot '..' 'Get-AzPaaSAvailability.ps1'),
+    (Join-Path $PSScriptRoot '..' 'AzPaaSAvailability' 'AzPaaSAvailability.psm1'),
     (Get-ChildItem (Join-Path $PSScriptRoot '..' 'AzPaaSAvailability' '*.ps1') -Recurse).FullName
 ) | Where-Object { $_ }
+
+# Validate .psd1 manifest separately
+$manifestCheckPath = Join-Path $PSScriptRoot '..' 'AzPaaSAvailability' 'AzPaaSAvailability.psd1'
+if (Test-Path $manifestCheckPath) {
+    try {
+        $null = Import-PowerShellDataFile $manifestCheckPath -ErrorAction Stop
+    }
+    catch {
+        Write-Host "  SYNTAX ERROR: $manifestCheckPath" -ForegroundColor Red
+        Write-Host "    $($_.Exception.Message)" -ForegroundColor Red
+        $syntaxErrors++
+    }
+}
 
 $syntaxErrors = 0
 foreach ($script in $scripts) {
@@ -52,6 +67,7 @@ Write-Host "[2/4] PSScriptAnalyzer Linting..." -ForegroundColor Yellow
 $settingsPath = Join-Path $PSScriptRoot '..' 'PSScriptAnalyzerSettings.psd1'
 if (-not (Get-Module PSScriptAnalyzer -ListAvailable)) {
     Write-Host "  SKIP: PSScriptAnalyzer not installed" -ForegroundColor DarkGray
+    $skipped++
 }
 elseif (-not (Test-Path -LiteralPath $settingsPath)) {
     Write-Host "  FAIL: Settings file not found at '$settingsPath'" -ForegroundColor Red
@@ -88,9 +104,11 @@ Write-Host "[3/4] Pester Tests..." -ForegroundColor Yellow
 $testsPath = Join-Path $PSScriptRoot '..' 'tests'
 if (-not (Test-Path $testsPath)) {
     Write-Host "  SKIP: No tests directory found" -ForegroundColor DarkGray
+    $skipped++
 }
 elseif (-not (Get-Module Pester -ListAvailable)) {
     Write-Host "  SKIP: Pester not installed" -ForegroundColor DarkGray
+    $skipped++
 }
 else {
     try {
@@ -148,11 +166,17 @@ else {
 Write-Host "`n=== Results ===" -ForegroundColor Cyan
 Write-Host "  Passed: $passed" -ForegroundColor Green
 Write-Host "  Failed: $failed" -ForegroundColor $(if ($failed -gt 0) { 'Red' } else { 'Green' })
+if ($skipped -gt 0) {
+    Write-Host "  Skipped: $skipped" -ForegroundColor DarkGray
+}
 Write-Host ""
 
 if ($failed -gt 0) {
     Write-Host "VALIDATION FAILED" -ForegroundColor Red
     exit 1
+}
+elseif ($skipped -gt 0) {
+    Write-Host "ALL CHECKS PASSED ($skipped skipped — install missing tools for full coverage)" -ForegroundColor Yellow
 }
 else {
     Write-Host "ALL CHECKS PASSED" -ForegroundColor Green
