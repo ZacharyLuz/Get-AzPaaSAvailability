@@ -39,7 +39,7 @@
 
 ## Branch Protection
 
-- Main/master branches are protected from deletion and require PRs for changes.
+- Main branch is protected from deletion and requires PRs for changes.
 - Copilot code review is enabled on push.
 
 ## Related Projects

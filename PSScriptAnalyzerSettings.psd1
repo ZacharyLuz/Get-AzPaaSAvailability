@@ -2,6 +2,8 @@
     Severity = @('Error', 'Warning')
     ExcludeRules = @(
         'PSAvoidUsingWriteHost'
+        'PSUseSingularNouns'
+        'PSUseBOMForUnicodeEncodedFile'
     )
     Rules = @{
         PSUseCompatibleSyntax = @{
