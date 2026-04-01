@@ -2,12 +2,43 @@
 
 Scan Azure PaaS service availability, capacity, quota, and pricing across regions.
 
+![PowerShell](https://img.shields.io/badge/PowerShell-7.0%2B-blue)
+![Azure](https://img.shields.io/badge/Azure-Az%20Modules-0078D4)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Version](https://img.shields.io/badge/Version-0.5.0-brightgreen)
+
+## Disclosure & Disclaimer
+
+The author is a Microsoft employee; however, this is a **personal open-source project**. It is **not** an official Microsoft product, nor is it endorsed, sponsored, or supported by Microsoft.
+
+- **No warranty**: Provided "as-is" under the [MIT License](LICENSE).
+- **No official support**: For Azure platform issues, use [Azure Support](https://azure.microsoft.com/support/).
+- **No confidential information**: This tool uses only publicly documented Azure APIs.
+- **Trademarks**: "Microsoft" and "Azure" are trademarks of Microsoft Corporation.
+
+## See Also
+
 **Part of the Azure Availability Scanner family:**
+
 | Tool | Target |
 |------|--------|
 | [Get-AzVMAvailability](https://github.com/zacharyluz/Get-AzVMAvailability) | VM SKUs (IaaS compute) |
 | [Get-AzAIModelAvailability](https://github.com/zacharyluz/Get-AzAIModelAvailability) | AI models (Cognitive Services) |
-| **Get-AzPaaSAvailability** | **PaaS compute services** |
+| **Get-AzPaaSAvailability** | **PaaS services (24 services)** |
+
+## Installation
+
+```powershell
+# Clone the repository
+git clone https://github.com/zacharyluz/Get-AzPaaSAvailability.git
+cd Get-AzPaaSAvailability
+
+# Install required Azure module (if needed)
+Install-Module -Name Az.Accounts -Scope CurrentUser
+
+# Optional: Install ImportExcel for styled XLSX exports
+Install-Module -Name ImportExcel -Scope CurrentUser
+```
 
 ## Quick Start
 
@@ -30,6 +61,22 @@ $results.SqlSkus | Where-Object { $_.ZoneRedundant }
 
 # Export to XLSX
 $results | Export-AzPaaSAvailabilityReport -Path C:\Temp
+```
+
+### Wrapper Script (No Import Required)
+
+```powershell
+# Interactive — prompts for region selection
+.\Get-AzPaaSAvailability.ps1
+
+# Automated scan with region preset
+.\Get-AzPaaSAvailability.ps1 -RegionPreset USMajor -NoPrompt
+
+# SQL-focused scan with auto-export
+.\Get-AzPaaSAvailability.ps1 -Service SqlDatabase -Edition Hyperscale -AutoExport
+
+# JSON output for automation
+.\Get-AzPaaSAvailability.ps1 -Region eastus -NoPrompt -JsonOutput
 ```
 
 ## Services Covered (24 total)
