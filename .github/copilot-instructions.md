@@ -33,7 +33,7 @@
 - Use `#region`/`#endregion` for section organization
 - Comments explain *why*, not *what*
 - Named constants for magic numbers
-- Every `catch` block must have at least `Write-Verbose`
+- Every `catch` block must handle the error visibly (`Write-Host` guarded by `-not $Quiet`, or `Write-Verbose`)
 - API calls use `Invoke-WithRetry` for resilience
 - Public functions go in `Public/`, private in `Private/`
 

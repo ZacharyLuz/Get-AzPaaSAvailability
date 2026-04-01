@@ -119,9 +119,9 @@ User request
 
 ## Core Workflows
 
-### Workflow 1: Full PaaS Scan (All 24 Services)
+### Workflow 1: PaaS Scan (9 First-Class Services)
 
-**Scenario:** Compare all PaaS service availability across regions.
+**Scenario:** Compare PaaS service availability across regions. The orchestrator scans 9 API-backed services. For the 15 static-tier services, call `Get-AzServiceTierAvailability` separately (see Workflow 7).
 
 ```powershell
 # Wrapper script — interactive region selection
@@ -192,8 +192,8 @@ Get-AzAppServiceAvailability -Region eastus,westeurope
 # Container Apps workload profiles (Consumption, D4-D32, GPU)
 Get-AzContainerAppsAvailability -Region eastus,westus2
 
-# Functions runtime stacks and versions
-Get-AzFunctionsAvailability -Region eastus
+# Functions runtime stacks and versions (global catalog, not per-region)
+Get-AzFunctionsAvailability
 ```
 
 ### Workflow 6: AKS / Storage
@@ -253,10 +253,10 @@ $results = Get-AzPaaSAvailability -Region eastus,westus2 -Quiet
 $results.SqlSkus | Where-Object { $_.ZoneRedundant -and $_.Edition -eq 'Hyperscale' }
 $results.PostgreSqlSkus | Where-Object { $_.ZoneSupport }
 
-# Export to XLSX
+# Export to XLSX (currently exports SQL + Cosmos DB sections)
 $results | Export-AzPaaSAvailabilityReport -Path C:\Temp
 
-# Export to CSV
+# Export to CSV (currently exports SQL + Cosmos DB sections)
 $results | Export-AzPaaSAvailabilityReport -Path C:\Temp -Format CSV
 
 # JSON output via wrapper script
@@ -362,16 +362,14 @@ SignalR, Notification Hubs.
 | Property | Type | Content |
 |----------|------|---------|
 | `SqlSkus` | Array | SQL Database/MI SKU details per region |
-| `SqlUsages` | Array | vCore quota usage per region |
 | `CosmosDbLocations` | Array | Cosmos DB region access details |
 | `PostgreSqlSkus` | Array | PostgreSQL Flexible Server SKUs |
 | `MySqlSkus` | Array | MySQL Flexible Server SKUs |
 | `AppServiceSkus` | Array | App Service plan SKUs per region |
-| `ContainerAppsProfiles` | Array | Container Apps workload profiles |
+| `ContainerApps` | Array | Container Apps workload profiles |
 | `AksVersions` | Array | AKS Kubernetes versions per region |
-| `FunctionsStacks` | Array | Functions runtime stacks and versions |
+| `FunctionStacks` | Array | Functions runtime stacks and versions |
 | `StorageSkus` | Array | Storage SKUs per region |
-| `StaticTiers` | Array | Static-tier service pricing validation |
 | `ScanMetadata` | Object | Version, regions, timing, service count |
 
 ---
