@@ -222,7 +222,7 @@ function Get-AzPaaSAvailability {
 
     #region Display (non-Quiet)
     if (-not $Quiet) {
-        $outputWidth = 113
+        $outputWidth = 120
 
         # SQL display
         if ($scanSql -and $sqlResults.Count -gt 0) {
@@ -236,7 +236,7 @@ function Get-AzPaaSAvailability {
                 Write-Host "SQL $($SqlResourceType.ToUpper()): $regionCode" -ForegroundColor Cyan
                 Write-Host ('=' * $outputWidth) -ForegroundColor Gray
 
-                $headerFmt = "{0,-18} {1,-16} {2,6} {3,5} {4,-12} {5,-6} {6,-10} {7,-12} {8,-14}"
+                $headerFmt = "{0,-18} {1,-16} {2,6} {3,5} {4,-12} {5,-6} {6,-10} {7,-18} {8,-14}"
                 Write-Host ($headerFmt -f 'Edition', 'SKU', 'vCores', 'Zone', 'Compute', 'AHUB', 'Status', 'Storage', 'Quota(vCores)') -ForegroundColor White
                 Write-Host ('-' * $outputWidth) -ForegroundColor DarkGray
 
@@ -246,7 +246,7 @@ function Get-AzPaaSAvailability {
                 foreach ($sku in ($skus | Sort-Object Edition, vCores)) {
                     $zoneIcon = if ($sku.ZoneRedundant) { $icons.Check } else { $icons.Error }
                     $ahub = if ($sku.AHUBSupported) { 'Yes' } else { 'No' }
-                    $stor = if ($sku.StorageRedundancy.Length -gt 12) { $sku.StorageRedundancy.Substring(0, 9) + '...' } else { $sku.StorageRedundancy }
+                    $stor = $sku.StorageRedundancy
                     $skuDisp = if ($sku.SKU.Length -gt 16) { $sku.SKU.Substring(0, 13) + '...' } else { $sku.SKU }
 
                     Write-Host ($headerFmt -f $sku.Edition, $skuDisp, $sku.vCores, $zoneIcon, $sku.ComputeModel, $ahub, $sku.Status, $stor, $quotaDisplay) -ForegroundColor (Get-StatusColor $sku.Status)
@@ -340,8 +340,8 @@ function Get-AzPaaSAvailability {
     }
     #endregion
 
-    # Always return structured result object
-    return [PSCustomObject]@{
+    # Build result object
+    $result = [PSCustomObject]@{
         SqlSkus            = $sqlResults
         CosmosDbLocations  = $cosmosResults
         PostgreSqlSkus     = $pgResults
@@ -368,5 +368,20 @@ function Get-AzPaaSAvailability {
             ScanDuration = [math]::Round(((Get-Date) - $scanStart).TotalSeconds, 1)
             GeneratedAt  = (Get-Date -Format 'o')
         }
+    }
+
+    # Only emit to pipeline when output is being captured (piped, assigned, redirected).
+    # In interactive terminal mode, the Write-Host display is the output — suppress the
+    # raw object dump that produces 2000+ noisy @{...} lines.
+    if ($Quiet -or [Console]::IsOutputRedirected) {
+        return $result
+    }
+    else {
+        # Store in a well-known variable so the user can access it after the run
+        Set-Variable -Name 'AzPaaSLastResult' -Value $result -Scope Global -Force
+        Write-Host "Tip: Results stored in " -ForegroundColor DarkGray -NoNewline
+        Write-Host '$AzPaaSLastResult' -ForegroundColor Cyan -NoNewline
+        Write-Host " — or use -Quiet to capture: " -ForegroundColor DarkGray -NoNewline
+        Write-Host '$r = Get-AzPaaSAvailability ... -Quiet' -ForegroundColor Cyan
     }
 }
