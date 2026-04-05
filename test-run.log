@@ -1,0 +1,230 @@
+Azure Environment: AzureCloud
+Resource Manager URL: https://management.azure.com
+Pricing API URL: https://prices.azure.com/api/retail/prices
+Using current subscription: DEMO_ENVIRONMENT_ME-MngEnvMCAP802183-zaluz-6
+
+
+=================================================================================================================
+GET-AZPAASAVAILABILITY v0.1.0
+=================================================================================================================
+Subscription(s): a620e601-99b5-43e2-a7a4-080421427fc2
+Regions: eastus, westus2
+Services: SQL Database (SqlDatabase), Cosmos DB
+Icons: Unicode | Cloud: AzureCloud
+=================================================================================================================
+Scanning SQL SqlDatabase in 2 region(s)...
+WebRequest: v1.1 GET https://management.azure.com/subscriptions/a620e601-99b5-43e2-a7a4-080421427fc2/providers/Microsoft.Sql/locations/eastus/capabilities with query length 48
+WebResponse: 200 OK with application/json payload with body size 1004.89 KB (1,029,009 bytes)
+WebRequest: v1.1 GET https://management.azure.com/subscriptions/a620e601-99b5-43e2-a7a4-080421427fc2/providers/Microsoft.Sql/locations/eastus/usages with query length 22
+WebResponse: 200 OK with application/json payload with body size 5.19 KB (5,315 bytes)
+  ✓ eastus: 0 SKUs
+WebRequest: v1.1 GET https://management.azure.com/subscriptions/a620e601-99b5-43e2-a7a4-080421427fc2/providers/Microsoft.Sql/locations/westus2/capabilities with query length 48
+WebResponse: 200 OK with application/json payload with body size 289.07 KB (296,006 bytes)
+WebRequest: v1.1 GET https://management.azure.com/subscriptions/a620e601-99b5-43e2-a7a4-080421427fc2/providers/Microsoft.Sql/locations/westus2/usages with query length 22
+WebResponse: 200 OK with application/json payload with body size 5.22 KB (5,341 bytes)
+  ✓ westus2: 160 SKUs
+Scanning Cosmos DB region access...
+WebRequest: v1.1 GET https://management.azure.com/subscriptions/a620e601-99b5-43e2-a7a4-080421427fc2/providers/Microsoft.DocumentDB/locations with query length 22
+WebResponse: 200 Ok with application/json payload with body size 28.98 KB (29,672 bytes)
+  ✓ 2 regions checked (2 blocked)
+Scan complete in 4.8s
+
+=================================================================================================================
+SQL SQLDATABASE: westus2
+=================================================================================================================
+Edition            SKU              vCores  Zone Compute      AHUB   Status     Storage      Quota(vCores) 
+-----------------------------------------------------------------------------------------------------------------
+Basic              Basic                 5     ✗              No     Default    GRS,LRS,Z... 0/500         
+BusinessCritical   BC_Gen5_2             2     ✓ Provisioned  Yes    Default    GRS,LRS,Z... 0/500         
+BusinessCritical   BC_Gen5_4             4     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+BusinessCritical   BC_Gen5_6             6     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+BusinessCritical   BC_Gen5_8             8     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+BusinessCritical   BC_Gen5_10           10     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+BusinessCritical   BC_Gen5_12           12     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+BusinessCritical   BC_Gen5_14           14     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+BusinessCritical   BC_Gen5_16           16     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+BusinessCritical   BC_Gen5_18           18     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+BusinessCritical   BC_Gen5_20           20     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+BusinessCritical   BC_Gen5_24           24     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+BusinessCritical   BC_Gen5_32           32     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+BusinessCritical   BC_Gen5_40           40     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+BusinessCritical   BC_Gen5_80           80     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+BusinessCritical   BC_Gen5_128         128     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+DataWarehouse      DW100c              900     ✗              No     Default    GRS,LRS,Z... 0/500         
+DataWarehouse      DW200c             1800     ✗              No     Available  GRS,LRS,Z... 0/500         
+DataWarehouse      DW300c             2700     ✗              No     Available  GRS,LRS,Z... 0/500         
+DataWarehouse      DW400c             3600     ✗              No     Available  GRS,LRS,Z... 0/500         
+DataWarehouse      DW500c             4500     ✗              No     Available  GRS,LRS,Z... 0/500         
+DataWarehouse      DW1000c            9000     ✗              No     Available  GRS,LRS,Z... 0/500         
+DataWarehouse      DW1500c           13500     ✗              No     Available  GRS,LRS,Z... 0/500         
+DataWarehouse      DW2000c           18000     ✗              No     Available  GRS,LRS,Z... 0/500         
+DataWarehouse      DW2500c           22500     ✗              No     Available  GRS,LRS,Z... 0/500         
+DataWarehouse      DW3000c           27000     ✗              No     Available  GRS,LRS,Z... 0/500         
+DataWarehouse      DW5000c           45000     ✗              No     Available  GRS,LRS,Z... 0/500         
+DataWarehouse      DW6000c           54000     ✗              No     Available  GRS,LRS,Z... 0/500         
+DataWarehouse      DW7500c           67500     ✗              No     Available  GRS,LRS,Z... 0/500         
+DataWarehouse      DW10000c          90000     ✗              No     Available  GRS,LRS,Z... 0/500         
+DataWarehouse      DW15000c         135000     ✗              No     Available  GRS,LRS,Z... 0/500         
+DataWarehouse      DW30000c         270000     ✗              No     Available  GRS,LRS,Z... 0/500         
+Free               Free                  5     ✗              No     Default    GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_S_Gen5_1           1     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_S_Gen5_2           2     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Gen5_2             2     ✓ Provisioned  Yes    Default    GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_S_Gen5_4           4     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Gen5_4             4     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_S_Gen5_6           6     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Gen5_6             6     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Fsv2_8             8     ✗ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_S_Gen5_8           8     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Gen5_8             8     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Fsv2_10           10     ✗ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_S_Gen5_10         10     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Gen5_10           10     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_S_Gen5_12         12     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Fsv2_12           12     ✗ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Gen5_12           12     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Gen5_14           14     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_S_Gen5_14         14     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Fsv2_14           14     ✗ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Gen5_16           16     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_S_Gen5_16         16     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Fsv2_16           16     ✗ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Gen5_18           18     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Fsv2_18           18     ✗ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_S_Gen5_18         18     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Gen5_20           20     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Fsv2_20           20     ✗ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_S_Gen5_20         20     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Gen5_24           24     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_S_Gen5_24         24     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Fsv2_24           24     ✗ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Gen5_32           32     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_S_Gen5_32         32     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Fsv2_32           32     ✗ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Fsv2_36           36     ✗ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Gen5_40           40     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_S_Gen5_40         40     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Fsv2_72           72     ✗ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_S_Gen5_80         80     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Gen5_80           80     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+GeneralPurpose     GP_Gen5_128         128     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_PRMS_2             2     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_MOPRMS_2           2     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_S_Gen5_2           2     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_Gen5_2             2     ✓ Provisioned  Yes    Default    GRS,LRS,Z... 0/500         
+Hyperscale         HS_MOPRMS_4           4     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_S_Gen5_4           4     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_Gen5_4             4     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_PRMS_4             4     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_S_Gen5_6           6     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_PRMS_6             6     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_MOPRMS_6           6     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_Gen5_6             6     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_Gen5_8             8     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_S_Gen5_8           8     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_PRMS_8             8     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_MOPRMS_8           8     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_PRMS_10           10     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_Gen5_10           10     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_MOPRMS_10         10     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_S_Gen5_10         10     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_Gen5_12           12     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_S_Gen5_12         12     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_PRMS_12           12     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_MOPRMS_12         12     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_Gen5_14           14     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_S_Gen5_14         14     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_PRMS_14           14     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_MOPRMS_14         14     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_Gen5_16           16     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_S_Gen5_16         16     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_MOPRMS_16         16     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_PRMS_16           16     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_S_Gen5_18         18     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_Gen5_18           18     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_MOPRMS_18         18     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_PRMS_18           18     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_Gen5_20           20     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_S_Gen5_20         20     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_PRMS_20           20     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_MOPRMS_20         20     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_Gen5_24           24     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_S_Gen5_24         24     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_PRMS_24           24     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_MOPRMS_24         24     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_Gen5_32           32     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_S_Gen5_32         32     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_MOPRMS_32         32     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_PRMS_32           32     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_MOPRMS_40         40     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_PRMS_40           40     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_S_Gen5_40         40     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_Gen5_40           40     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_MOPRMS_64         64     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_PRMS_64           64     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_MOPRMS_80         80     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_S_Gen5_80         80     ✓ Serverless   No     Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_Gen5_80           80     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_PRMS_80           80     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_PRMS_128         128     ✓ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_PRMS_160         160     ✗ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Hyperscale         HS_PRMS_192         192     ✗ Provisioned  Yes    Available  GRS,LRS,Z... 0/500         
+Premium            P1                  125     ✓              No     Default    GRS,LRS,Z... 0/500         
+Premium            P2                  250     ✓              No     Available  GRS,LRS,Z... 0/500         
+Premium            P4                  500     ✓              No     Available  GRS,LRS,Z... 0/500         
+Premium            P6                 1000     ✓              No     Available  GRS,LRS,Z... 0/500         
+Premium            P11                1750     ✓              No     Available  GRS,LRS,Z... 0/500         
+Premium            P15                4000     ✓              No     Available  GRS,LRS,Z... 0/500         
+Standard           S0                   10     ✗              No     Default    GRS,LRS,Z... 0/500         
+Standard           S1                   20     ✗              No     Available  GRS,LRS,Z... 0/500         
+Standard           S2                   50     ✗              No     Available  GRS,LRS,Z... 0/500         
+Standard           S3                  100     ✗              No     Available  GRS,LRS,Z... 0/500         
+Standard           S4                  200     ✗              No     Available  GRS,LRS,Z... 0/500         
+Standard           S6                  400     ✗              No     Available  GRS,LRS,Z... 0/500         
+Standard           S7                  800     ✗              No     Available  GRS,LRS,Z... 0/500         
+Standard           S9                 1600     ✗              No     Available  GRS,LRS,Z... 0/500         
+Standard           S12                3000     ✗              No     Available  GRS,LRS,Z... 0/500         
+Stretch            DS100               750     ✗              No     Default    GRS,LRS,Z... 0/500         
+Stretch            DS200              1500     ✗              No     Available  GRS,LRS,Z... 0/500         
+Stretch            DS300              2250     ✗              No     Available  GRS,LRS,Z... 0/500         
+Stretch            DS400              3000     ✗              No     Available  GRS,LRS,Z... 0/500         
+Stretch            DS500              3750     ✗              No     Available  GRS,LRS,Z... 0/500         
+Stretch            DS600              4500     ✗              No     Available  GRS,LRS,Z... 0/500         
+Stretch            DS1000             7500     ✗              No     Available  GRS,LRS,Z... 0/500         
+Stretch            DS1200             9000     ✗              No     Available  GRS,LRS,Z... 0/500         
+Stretch            DS1500            11250     ✗              No     Available  GRS,LRS,Z... 0/500         
+Stretch            DS2000            15000     ✗              No     Available  GRS,LRS,Z... 0/500         
+-----------------------------------------------------------------------------------------------------------------
+Server Quota: 0/250
+ | 
+vCore Quota: 0/500 (0%)
+Total: 160 SKUs
+
+=================================================================================================================
+COSMOS DB REGION ACCESS
+=================================================================================================================
+Region                AZ Access (AZ)     Access (Regular)  Residency  Backup          Status  
+-----------------------------------------------------------------------------------------------------------------
+eastus                 ✓ ✗ BLOCKED       ✗ BLOCKED         No         Geo,Zone,Local  Online  
+westus2                ✓ ✗ BLOCKED       ✓ Allowed         No         Geo,Zone,Local  Online  
+-----------------------------------------------------------------------------------------------------------------
+
+⚠ ACTION REQUIRED:
+  eastus: Open SR — blocked for all account types
+  westus2: Open SR — blocked for AZ accounts
+
+=================================================================================================================
+CROSS-SERVICE REGION SUMMARY
+=================================================================================================================
+Region             SQL SKUs             Cosmos Access        Notes                    
+-----------------------------------------------------------------------------------------------------------------
+eastus             ✗ No data            ✗ BLOCKED            Cosmos SR needed         
+westus2            ✓ 160 SKUs           ✓ Accessible         Cosmos SR needed         
+-----------------------------------------------------------------------------------------------------------------
+
+=================================================================================================================
+PAAS AVAILABILITY SCAN COMPLETE
+SQL: 160 SKUs | Cosmos DB: 2 regions | Regions: 2 | Time: 4.9s
+Generated: 2026-03-25 14:11:58
+=================================================================================================================
+
