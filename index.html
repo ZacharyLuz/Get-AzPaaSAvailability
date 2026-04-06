@@ -358,18 +358,18 @@
   <header class="reveal">
     <div class="tag">Repository Analytics</div>
     <h1>Get-AzPaaSAvailability</h1>
-    <p>Apr 6, 2026 at 3:25 AM &middot; 2026-03-22 — 2026-04-04</p>
+    <p>Apr 6, 2026 at 1:25 PM &middot; 2026-03-22 — 2026-04-05</p>
   </header>  <div class="metrics reveal d1">
     <div class="metric">
       <div class="m-label" id="hdr-views-label">Views (All Time)</div>
-      <div class="m-value" id="hdr-views-value">62</div>
-      <div class="m-sub" id="hdr-views-sub">8 unique</div>
+      <div class="m-value" id="hdr-views-value">66</div>
+      <div class="m-sub" id="hdr-views-sub">10 unique</div>
       <div class="m-delta flat" id="hdr-views-delta">&mdash;</div>
     </div>
     <div class="metric">
       <div class="m-label" id="hdr-clones-label">Clones (All Time)</div>
-      <div class="m-value" id="hdr-clones-value">94</div>
-      <div class="m-sub" id="hdr-clones-sub">66 unique</div>
+      <div class="m-value" id="hdr-clones-value">188</div>
+      <div class="m-sub" id="hdr-clones-sub">102 unique</div>
       <div class="m-delta flat" id="hdr-clones-delta">&mdash;</div>
     </div>
     <div class="metric">
@@ -452,14 +452,14 @@
   </div>  <div class="chart-card reveal d2">
     <div class="chart-header">
       <div class="ch-left"><h3>Page Views</h3><div class="ch-sub">Daily views and unique visitors</div></div>
-      <div class="ch-right"><div class="ch-stat-label">Total Views</div><div class="ch-stat-value" id="viewsStat">62</div></div>
+      <div class="ch-right"><div class="ch-stat-label">Total Views</div><div class="ch-stat-value" id="viewsStat">66</div></div>
     </div>
     <canvas id="viewsChart"></canvas>
   </div>
   <div class="chart-card reveal d3">
     <div class="chart-header">
       <div class="ch-left"><h3>Git Clones</h3><div class="ch-sub">Daily clones and unique cloners</div></div>
-      <div class="ch-right"><div class="ch-stat-label">Total Clones</div><div class="ch-stat-value" id="clonesStat">94</div></div>
+      <div class="ch-right"><div class="ch-stat-label">Total Clones</div><div class="ch-stat-value" id="clonesStat">188</div></div>
     </div>
     <canvas id="clonesChart"></canvas>
   </div>
@@ -494,8 +494,8 @@
 </div><script src="dashboard.js"></script>
 <script>
 var allData = {
-  views:  { dates: ["2026-03-22","2026-03-23","2026-03-24","2026-03-25","2026-03-26","2026-03-27","2026-03-28","2026-03-29","2026-03-30","2026-03-31","2026-04-01","2026-04-02","2026-04-03","2026-04-04"], total: [0,0,0,0,0,0,0,0,0,0,50,9,3,0], unique: [0,0,0,0,0,0,0,0,0,0,3,4,1,0] },
-  clones: { dates: ["2026-03-22","2026-03-23","2026-03-24","2026-03-25","2026-03-26","2026-03-27","2026-03-28","2026-03-29","2026-03-30","2026-03-31","2026-04-01","2026-04-02","2026-04-03","2026-04-04"], total: [0,0,0,0,0,0,0,0,0,0,78,13,0,3], unique: [0,0,0,0,0,0,0,0,0,0,53,10,0,3] },
+  views:  { dates: ["2026-03-22","2026-03-23","2026-03-24","2026-03-25","2026-03-26","2026-03-27","2026-03-28","2026-03-29","2026-03-30","2026-03-31","2026-04-01","2026-04-02","2026-04-03","2026-04-04","2026-04-05"], total: [0,0,0,0,0,0,0,0,0,0,50,9,3,0,4], unique: [0,0,0,0,0,0,0,0,0,0,3,4,1,0,2] },
+  clones: { dates: ["2026-03-22","2026-03-23","2026-03-24","2026-03-25","2026-03-26","2026-03-27","2026-03-28","2026-03-29","2026-03-30","2026-03-31","2026-04-01","2026-04-02","2026-04-03","2026-04-04","2026-04-05"], total: [0,0,0,0,0,0,0,0,0,0,78,13,0,3,94], unique: [0,0,0,0,0,0,0,0,0,0,53,10,0,3,36] },
   stars:  { dates: , cumulative: , users:  }
 };
 var refData = { labels: ["statics.teams.cdn.office.net","github.com","Bing"], views: [26,16,5], uniques: [2,1,4] };
