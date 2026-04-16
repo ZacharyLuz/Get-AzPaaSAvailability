@@ -95,6 +95,16 @@ jobs:
           gh api "repos/${{ github.repository }}/releases?per_page=100" > /tmp/releases.json
           echo "Release data collected"
 
+      - name: Collect PSGallery downloads
+        shell: bash
+        run: |
+          if ! curl -fsS "https://www.powershellgallery.com/api/v2/FindPackagesById()?id='Get-AzPaaSAvailability'" \
+            -H "Accept: application/atom+xml" -o /tmp/psgallery.xml; then
+            echo "::warning::PSGallery API request failed (non-2xx or network error)"
+            echo '<feed/>' > /tmp/psgallery.xml
+          fi
+          echo "PSGallery response collected"
+
       - name: Merge into CSVs
         run: |
           TODAY=$(date -u +%Y-%m-%d)
@@ -199,6 +209,51 @@ jobs:
           fi
           cp /tmp/release_downloads_existing.csv traffic-data/data/release-downloads.csv
 
+          # ── Individual Release Dates (rebuilt each run from releases API) ──
+          echo "TagName,PublishedDate" > traffic-data/data/releases.csv
+          jq -r '.[] | (.published_at // .created_at) as $release_date | select($release_date | type == "string") | [.tag_name, ($release_date | split("T")[0])] | @csv' /tmp/releases.json >> traffic-data/data/releases.csv
+
+          # ── PSGallery Downloads (daily snapshot per version) ──
+          if [ -f traffic-data/data/psgallery-downloads.csv ]; then
+            cp traffic-data/data/psgallery-downloads.csv /tmp/psgallery_existing.csv
+          else
+            echo "Date,Version,VersionDownloads,TotalDownloads,IsLatestVersion" > /tmp/psgallery_existing.csv
+          fi
+          # PSGallery counts are cumulative — replace today's rows with fresh data on each run
+          # Only remove+reinsert when python3 is available and parse succeeds, to avoid data loss
+          if command -v python3 &>/dev/null; then
+            python3 -c "
+          import xml.etree.ElementTree as ET, sys
+          ns = {'a': 'http://www.w3.org/2005/Atom', 'd': 'http://schemas.microsoft.com/ado/2007/08/dataservices', 'm': 'http://schemas.microsoft.com/ado/2007/08/dataservices/metadata'}
+          tree = ET.parse('/tmp/psgallery.xml')
+          today = sys.argv[1]
+          rows = []
+          for entry in tree.findall('.//a:entry', ns):
+              props = entry.find('.//m:properties', ns)
+              if props is None: continue
+              ver = props.find('d:Version', ns)
+              vdl = props.find('d:VersionDownloadCount', ns)
+              tdl = props.find('d:DownloadCount', ns)
+              ilv = props.find('d:IsLatestVersion', ns)
+              if ver is not None:
+                  rows.append(f'{today},{ver.text},{vdl.text if vdl is not None else 0},{tdl.text if tdl is not None else 0},{ilv.text if ilv is not None else \"false\"}')
+          if rows:
+              for r in rows: print(r)
+          else:
+              sys.exit(1)
+          " "$TODAY" > /tmp/psgallery_new_rows.csv 2>/dev/null
+            if [ $? -eq 0 ] && [ -s /tmp/psgallery_new_rows.csv ]; then
+              grep -v "^\"*${TODAY}" /tmp/psgallery_existing.csv > /tmp/psgallery_filtered.csv 2>/dev/null || true
+              mv /tmp/psgallery_filtered.csv /tmp/psgallery_existing.csv
+              cat /tmp/psgallery_new_rows.csv >> /tmp/psgallery_existing.csv
+            else
+              echo "Warning: PSGallery XML parse returned no rows, keeping existing data"
+            fi
+          else
+            echo "Warning: python3 not available, skipping PSGallery XML parse"
+          fi
+          cp /tmp/psgallery_existing.csv traffic-data/data/psgallery-downloads.csv
+
           echo "=== Collection Summary ==="
           echo "Views:     $(tail -n +2 traffic-data/data/views.csv | wc -l) days"
           echo "Clones:    $(tail -n +2 traffic-data/data/clones.csv | wc -l) days"
@@ -207,12 +262,15 @@ jobs:
           echo "Paths:     $(tail -n +2 traffic-data/data/paths.csv | wc -l) records"
           echo "Stats:     $(tail -n +2 traffic-data/data/repo-stats.csv | wc -l) days"
           echo "Release Downloads Snapshots: $(tail -n +2 traffic-data/data/release-downloads.csv | wc -l) days"
+          echo "Releases: $(tail -n +2 traffic-data/data/releases.csv | wc -l) tags"
+          echo "PSGallery Snapshots: $(tail -n +2 traffic-data/data/psgallery-downloads.csv | wc -l) records"
 
       - name: Generate dashboard HTML for GitHub Pages
         shell: pwsh
         run: |
           ./tools/Generate-TrafficDashboard-Premium-v2.ps1 -InputDir "./traffic-data/data" -OutputFile "./traffic-data/dashboard.html"
           Copy-Item "./traffic-data/dashboard.html" "./traffic-data/index.html" -Force
+          Copy-Item "./tools/dashboard.js" "./traffic-data/dashboard.js" -Force
 
       - name: Commit and push
         working-directory: traffic-data
@@ -226,4 +284,3 @@ jobs:
             git commit -m "chore: collect traffic + dashboard $(date -u +%Y-%m-%d)"
             git push
           fi
-
