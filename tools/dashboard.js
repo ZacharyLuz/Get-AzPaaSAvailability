@@ -70,10 +70,100 @@ function lineOpts(legend) {
   };
 }
 
+// Layout constant — shared across all charts that show release annotations
+var RELEASE_LABEL_PADDING = 56;
+
+// ── Shared release annotation plugin builder ──
+// Returns a Chart.js plugin that draws vertical dashed lines at release dates.
+// Staggers labels vertically when releases are too close together to avoid overlap.
+function makeReleasePlugin(releases, filteredDatesRef) {
+  return {
+    id: 'releaseLines',
+    afterDraw: function(chart) {
+      if (!releases || !releases.length) return;
+      var dates = filteredDatesRef();
+      var visible = releases
+        .filter(function(r) { return dates.indexOf(r.date) !== -1; })
+        .map(function(r) { return { version: r.version, date: r.date, idx: dates.indexOf(r.date) }; })
+        .sort(function(a, b) { return a.idx - b.idx; });
+      if (!visible.length) return;
+      // Deduplicate: keep only the highest version per chart date
+      var deduped = {};
+      visible.forEach(function(r) {
+        var key = r.idx;
+        if (!(key in deduped)) {
+          deduped[key] = r;
+        } else {
+          var cur = deduped[key].version.replace(/^v/, '').split('.').map(Number);
+          var cand = r.version.replace(/^v/, '').split('.').map(Number);
+          for (var i = 0; i < 3; i++) {
+            if ((cand[i] || 0) > (cur[i] || 0)) { deduped[key] = r; break; }
+            if ((cand[i] || 0) < (cur[i] || 0)) break;
+          }
+        }
+      });
+      visible = Object.keys(deduped).map(function(k) { return deduped[k]; })
+        .sort(function(a, b) { return a.idx - b.idx; });
+      var ctx = chart.ctx;
+      var xAxis = chart.scales.x;
+      var yAxis = chart.scales.y;
+      ctx.save();
+      ctx.font = '10px Inter, sans-serif';
+      // Measure label widths and assign stagger tiers to avoid overlap
+      var minGap = 8; // px padding between labels
+      var tierSpacing = 14; // vertical px between stagger tiers
+      var topPad = (chart.options.layout && chart.options.layout.padding) ? chart.options.layout.padding.top : RELEASE_LABEL_PADDING;
+      var maxTiers = Math.max(1, Math.floor(topPad / tierSpacing));
+      var placed = []; // {left, right, tier}
+      visible.forEach(function(r) {
+        var x = xAxis.getPixelForValue(r.idx);
+        var w = ctx.measureText(r.version).width;
+        var left = x - w / 2;
+        var right = x + w / 2;
+        // Find lowest tier that doesn't collide, clamped to maxTiers
+        var tier = 0;
+        var foundTier = false;
+        for (var t = 0; t < maxTiers; t++) {
+          var collision = false;
+          for (var p = 0; p < placed.length; p++) {
+            if (placed[p].tier === t && !(right + minGap < placed[p].left || left - minGap > placed[p].right)) {
+              collision = true;
+              break;
+            }
+          }
+          if (!collision) { tier = t; foundTier = true; break; }
+        }
+        if (!foundTier) { tier = maxTiers - 1; }
+        placed.push({ left: left, right: right, tier: tier });
+        r.x = x;
+        r.tier = tier;
+      });
+      // Draw lines and labels (font already set above)
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.textAlign = 'center';
+      visible.forEach(function(r) {
+        ctx.beginPath();
+        ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+        ctx.lineWidth = 1;
+        ctx.moveTo(r.x, yAxis.top);
+        ctx.lineTo(r.x, yAxis.bottom);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillText(r.version, r.x, yAxis.top - 6 - (r.tier * tierSpacing));
+      });
+      ctx.restore();
+    }
+  };
+}
+
 // ── Chart instances ──
-var viewsChart, clonesChart, starsChart;
+var viewsChart, clonesChart, starsChart, psGalleryChart;
+var showReleases = true;
+var currentDays = 0;
 
 function buildCharts(allData, days) {
+  currentDays = days;
   function filterByDays(dates) {
     var arrays = Array.prototype.slice.call(arguments, 1);
     if (!days || days === 0) { return { dates: dates, arrays: arrays }; }
@@ -86,7 +176,7 @@ function buildCharts(allData, days) {
       String(t.getDate()).padStart(2, '0');
     var filtered = { dates: [], arrays: arrays.map(function() { return []; }) };
     dates.forEach(function(d, i) {
-      if (d >= cutoff) {
+      if (d > cutoff) {
         filtered.dates.push(d);
         arrays.forEach(function(arr, j) { filtered.arrays[j].push(arr[i]); });
       }
@@ -94,11 +184,13 @@ function buildCharts(allData, days) {
     return filtered;
   }
 
-  [viewsChart, clonesChart, starsChart].forEach(function(ch) { if (ch) { ch.destroy(); } });
+  [viewsChart, clonesChart, starsChart, psGalleryChart].forEach(function(ch) { if (ch) { ch.destroy(); } });
 
   // Views
   var v = filterByDays(allData.views.dates, allData.views.total, allData.views.unique);
   var vc = document.getElementById('viewsChart').getContext('2d');
+  var viewsOpts = lineOpts(true);
+  viewsOpts.layout = { padding: { top: RELEASE_LABEL_PADDING } };
   viewsChart = new Chart(vc, {
     type: 'line',
     data: {
@@ -108,7 +200,8 @@ function buildCharts(allData, days) {
         { label: 'Unique', data: v.arrays[1], borderColor: '#22c55e', backgroundColor: grad(vc, 34, 197, 94), fill: true, tension: 0.4 }
       ]
     },
-    options: lineOpts(true)
+    options: viewsOpts,
+    plugins: showReleases ? [makeReleasePlugin(allData.releases, function() { return v.dates; })] : []
   });
   var viewsSum = v.arrays[0].reduce(function(a, b) { return a + b; }, 0);
   document.getElementById('viewsStat').textContent = viewsSum.toLocaleString();
@@ -116,6 +209,8 @@ function buildCharts(allData, days) {
   // Clones
   var cl = filterByDays(allData.clones.dates, allData.clones.total, allData.clones.unique);
   var cc = document.getElementById('clonesChart').getContext('2d');
+  var clonesOpts = lineOpts(true);
+  clonesOpts.layout = { padding: { top: RELEASE_LABEL_PADDING } };
   clonesChart = new Chart(cc, {
     type: 'line',
     data: {
@@ -125,7 +220,8 @@ function buildCharts(allData, days) {
         { label: 'Unique', data: cl.arrays[1], borderColor: '#f43f5e', backgroundColor: grad(cc, 244, 63, 94), fill: true, tension: 0.4 }
       ]
     },
-    options: lineOpts(true)
+    options: clonesOpts,
+    plugins: showReleases ? [makeReleasePlugin(allData.releases, function() { return cl.dates; })] : []
   });
   var clonesSum = cl.arrays[0].reduce(function(a, b) { return a + b; }, 0);
   document.getElementById('clonesStat').textContent = clonesSum.toLocaleString();
@@ -174,11 +270,42 @@ function buildCharts(allData, days) {
           }
         }
       },
-      scales: { y: gY, x: gX }
-    }
+      scales: { y: gY, x: gX },
+      layout: { padding: { top: RELEASE_LABEL_PADDING } }
+    },
+    plugins: showReleases ? [makeReleasePlugin(allData.releases, function() { return st.dates; })] : []
   });
   if (st.arrays[0].length > 0) {
     document.getElementById('starsStat').textContent = st.arrays[0][st.arrays[0].length - 1];
+  }
+
+  // PSGallery Downloads (cumulative) with release annotations
+  var pgEl = document.getElementById('psGalleryChart');
+  if (pgEl && allData.psGallery && allData.psGallery.dates.length > 0) {
+    var pg = filterByDays(allData.psGallery.dates, allData.psGallery.totalDl);
+    var pgc = pgEl.getContext('2d');
+
+    var pgOpts = lineOpts(false);
+    pgOpts.layout = { padding: { top: RELEASE_LABEL_PADDING } };
+
+    psGalleryChart = new Chart(pgc, {
+      type: 'line',
+      data: {
+        labels: pg.dates,
+        datasets: [{
+          label: 'Total Downloads',
+          data: pg.arrays[0],
+          borderColor: '#06b6d4',
+          backgroundColor: grad(pgc, 6, 182, 212),
+          fill: true, tension: 0.4
+        }]
+      },
+      options: pgOpts,
+      plugins: showReleases ? [makeReleasePlugin(allData.releases, function() { return pg.dates; })] : []
+    });
+    if (pg.arrays[0].length > 0) {
+      document.getElementById('psGalleryStat').textContent = pg.arrays[0][pg.arrays[0].length - 1].toLocaleString();
+    }
   }
 }
 
@@ -196,7 +323,7 @@ function updateMetrics(allData, days) {
     var cutoff = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
     var r = { dates: [], values: [], uniques: [] };
     src.dates.forEach(function(d, i) {
-      if (d >= cutoff) { r.dates.push(d); r.values.push(src[valKey][i]); r.uniques.push(src[uniqKey][i]); }
+      if (d > cutoff) { r.dates.push(d); r.values.push(src[valKey][i]); r.uniques.push(src[uniqKey][i]); }
     });
     return r;
   }
@@ -211,8 +338,8 @@ function updateMetrics(allData, days) {
     var priorCutoff = t2.getFullYear() + '-' + String(t2.getMonth() + 1).padStart(2, '0') + '-' + String(t2.getDate()).padStart(2, '0');
     var current = 0, prior = 0;
     src.dates.forEach(function(d, i) {
-      if (d >= cutoff) { current += src[valKey][i]; }
-      else if (d >= priorCutoff && d < cutoff) { prior += src[valKey][i]; }
+      if (d > cutoff) { current += src[valKey][i]; }
+      else if (d > priorCutoff && d <= cutoff) { prior += src[valKey][i]; }
     });
     var delta = prior > 0 ? Math.round((current - prior) / prior * 100) : 0;
     return { current: current, prior: prior, delta: delta, hasData: prior > 0 };
@@ -234,23 +361,23 @@ function updateMetrics(allData, days) {
   var cDelta = rollingDelta(allData.clones, 'total', compareWindow);
   var compareLabel = days === 0 ? 'WoW' : 'vs prior';
 
-  var vCls = vDelta.delta > 0 ? 'up' : vDelta.delta < 0 ? 'down' : 'flat';
+  var vCls = vDelta.hasData ? (vDelta.delta > 0 ? 'up' : vDelta.delta < 0 ? 'down' : 'flat') : 'flat';
   var vArrow = vDelta.delta > 0 ? '\u2191' : vDelta.delta < 0 ? '\u2193' : '\u2192';
   document.getElementById('hdr-views-label').textContent = 'Views (' + rangeLabel + ')';
   document.getElementById('hdr-views-value').textContent = viewsTotal.toLocaleString();
   document.getElementById('hdr-views-sub').innerHTML = viewsUnique.toLocaleString() + ' unique &middot; ' + allTimeViews.toLocaleString() + ' all-time';
   var vDeltaEl = document.getElementById('hdr-views-delta');
   vDeltaEl.className = 'm-delta ' + vCls;
-  vDeltaEl.textContent = vArrow + ' ' + vDelta.delta + '% ' + compareLabel;
+  vDeltaEl.textContent = vDelta.hasData ? (vArrow + ' ' + vDelta.delta + '% ' + compareLabel) : '\u2014 N/A';
 
-  var cCls = cDelta.delta > 0 ? 'up' : cDelta.delta < 0 ? 'down' : 'flat';
+  var cCls = cDelta.hasData ? (cDelta.delta > 0 ? 'up' : cDelta.delta < 0 ? 'down' : 'flat') : 'flat';
   var cArrow = cDelta.delta > 0 ? '\u2191' : cDelta.delta < 0 ? '\u2193' : '\u2192';
   document.getElementById('hdr-clones-label').textContent = 'Clones (' + rangeLabel + ')';
   document.getElementById('hdr-clones-value').textContent = clonesTotal.toLocaleString();
   document.getElementById('hdr-clones-sub').innerHTML = clonesUnique.toLocaleString() + ' unique &middot; ' + allTimeClones.toLocaleString() + ' all-time';
   var cDeltaEl = document.getElementById('hdr-clones-delta');
   cDeltaEl.className = 'm-delta ' + cCls;
-  cDeltaEl.textContent = cArrow + ' ' + cDelta.delta + '% ' + compareLabel;
+  cDeltaEl.textContent = cDelta.hasData ? (cArrow + ' ' + cDelta.delta + '% ' + compareLabel) : '\u2014 N/A';
 
   // Insight cards
   var cloneRate = viewsTotal > 0 ? (clonesTotal / viewsTotal * 100).toFixed(1) : '0';
@@ -402,5 +529,15 @@ function initDashboard(allData, refData, pathData) {
     buildCharts(allData, days);
     updateMetrics(allData, days);
   };
-}
 
+  // Wire up release annotation toggle
+  window.toggleReleases = function() {
+    showReleases = !showReleases;
+    var btn = document.getElementById('releaseToggle');
+    if (btn) { btn.classList.toggle('active-toggle', showReleases); }
+    buildCharts(allData, currentDays);
+  };
+  // Set initial active state
+  var initBtn = document.getElementById('releaseToggle');
+  if (initBtn) { initBtn.classList.toggle('active-toggle', showReleases); }
+}
