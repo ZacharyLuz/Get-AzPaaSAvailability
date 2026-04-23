@@ -60,7 +60,7 @@
 
   .page {
     position: relative; z-index: 1;
-    max-width: 1400px; margin: 0 auto; padding: 0 32px 48px;
+    max-width: 1800px; margin: 0 auto; padding: 0 32px 48px;
   }
 
   /* Header */
@@ -238,6 +238,7 @@
     transition: background 0.15s, border-color 0.15s;
   }
   .range-btn:hover { background: var(--surface-raised); border-color: rgba(255,255,255,0.12); }
+  .range-btn.active-toggle { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); color: #60a5fa; }
   .range-btn .cal-icon { font-size: 14px; }
   .range-btn .arrow { font-size: 10px; color: var(--text-3); }
   .range-menu {
@@ -358,19 +359,19 @@
   <header class="reveal">
     <div class="tag">Repository Analytics</div>
     <h1>Get-AzPaaSAvailability</h1>
-    <p>Apr 15, 2026 at 1:54 PM &middot; 2026-03-22 — 2026-04-14</p>
+    <p>Apr 23, 2026 at 3:30 AM &middot; 2026-03-22 — 2026-04-21</p>
   </header>  <div class="metrics reveal d1">
     <div class="metric">
       <div class="m-label" id="hdr-views-label">Views (All Time)</div>
-      <div class="m-value" id="hdr-views-value">73</div>
-      <div class="m-sub" id="hdr-views-sub">14 unique</div>
-      <div class="m-delta down" id="hdr-views-delta">&#8595; -89% WoW</div>
+      <div class="m-value" id="hdr-views-value">140</div>
+      <div class="m-sub" id="hdr-views-sub">40 unique</div>
+      <div class="m-delta up" id="hdr-views-delta">&#8593; 857% WoW</div>
     </div>
     <div class="metric">
       <div class="m-label" id="hdr-clones-label">Clones (All Time)</div>
-      <div class="m-value" id="hdr-clones-value">400</div>
-      <div class="m-sub" id="hdr-clones-sub">197 unique</div>
-      <div class="m-delta down" id="hdr-clones-delta">&#8595; -17% WoW</div>
+      <div class="m-value" id="hdr-clones-value">525</div>
+      <div class="m-sub" id="hdr-clones-sub">249 unique</div>
+      <div class="m-delta down" id="hdr-clones-delta">&#8595; -4% WoW</div>
     </div>
     <div class="metric">
       <div class="m-label">Stars</div>
@@ -390,12 +391,12 @@
     <div class="metric">
       <div class="m-label">Top Source</div>
       <div class="m-value" style="font-size:20px;margin-top:2px">statics.teams.cdn.office.net</div>
-      <div class="m-sub">26 views</div>
+      <div class="m-sub">38 views</div>
     </div>
     <div class="metric">
-      <div class="m-label">Sources</div>
-      <div class="m-value">3</div>
-      <div class="m-sub">referrers</div>
+      <div class="m-label">PSGallery</div>
+      <div class="m-value">0</div>
+      <div class="m-sub">— &middot; 0 ver. installs</div>
     </div>
   </div>  <div class="insights reveal d1">
     <div class="insight-card">
@@ -449,17 +450,21 @@
         <div class="range-opt active" data-days="0" onclick="setRange(0, this)">All Time <span class="check">&#x2713;</span></div>
       </div>
     </div>
+    <button class="range-btn" id="releaseToggle" onclick="toggleReleases()" title="Show/hide release version lines on charts">
+      <span>&#x1F3F7;&#xFE0F;</span>
+      <span id="releaseToggleLabel">Releases</span>
+    </button>
   </div>  <div class="chart-card reveal d2">
     <div class="chart-header">
       <div class="ch-left"><h3>Page Views</h3><div class="ch-sub">Daily views and unique visitors</div></div>
-      <div class="ch-right"><div class="ch-stat-label">Total Views</div><div class="ch-stat-value" id="viewsStat">73</div></div>
+      <div class="ch-right"><div class="ch-stat-label">Total Views</div><div class="ch-stat-value" id="viewsStat">140</div></div>
     </div>
     <canvas id="viewsChart"></canvas>
   </div>
   <div class="chart-card reveal d3">
     <div class="chart-header">
       <div class="ch-left"><h3>Git Clones</h3><div class="ch-sub">Daily clones and unique cloners</div></div>
-      <div class="ch-right"><div class="ch-stat-label">Total Clones</div><div class="ch-stat-value" id="clonesStat">400</div></div>
+      <div class="ch-right"><div class="ch-stat-label">Total Clones</div><div class="ch-stat-value" id="clonesStat">525</div></div>
     </div>
     <canvas id="clonesChart"></canvas>
   </div>
@@ -469,6 +474,13 @@
       <div class="ch-right"><div class="ch-stat-label">Total Stars</div><div class="ch-stat-value" id="starsStat">0</div></div>
     </div>
     <canvas id="starsChart"></canvas>
+  </div>
+  <div class="chart-card reveal d4">
+    <div class="chart-header">
+      <div class="ch-left"><h3>PSGallery Downloads</h3><div class="ch-sub">Cumulative install count from PowerShell Gallery</div></div>
+      <div class="ch-right"><div class="ch-stat-label">Total Installs</div><div class="ch-stat-value" id="psGalleryStat">0</div></div>
+    </div>
+    <canvas id="psGalleryChart"></canvas>
   </div>
   <div class="chart-card reveal d4">
     <div class="chart-header">
@@ -494,12 +506,14 @@
 </div><script src="dashboard.js"></script>
 <script>
 var allData = {
-  views:  { dates: ["2026-03-22","2026-03-23","2026-03-24","2026-03-25","2026-03-26","2026-03-27","2026-03-28","2026-03-29","2026-03-30","2026-03-31","2026-04-01","2026-04-02","2026-04-03","2026-04-04","2026-04-05","2026-04-06","2026-04-07","2026-04-08","2026-04-09","2026-04-10","2026-04-11","2026-04-12","2026-04-13","2026-04-14"], total: [0,0,0,0,0,0,0,0,0,0,50,9,3,0,4,0,2,0,0,2,0,0,3,0], unique: [0,0,0,0,0,0,0,0,0,0,3,4,1,0,2,0,1,0,0,2,0,0,1,0] },
-  clones: { dates: ["2026-03-22","2026-03-23","2026-03-24","2026-03-25","2026-03-26","2026-03-27","2026-03-28","2026-03-29","2026-03-30","2026-03-31","2026-04-01","2026-04-02","2026-04-03","2026-04-04","2026-04-05","2026-04-06","2026-04-07","2026-04-08","2026-04-09","2026-04-10","2026-04-11","2026-04-12","2026-04-13","2026-04-14"], total: [0,0,0,0,0,0,0,0,0,0,78,13,0,3,94,31,8,15,23,19,30,41,20,25], unique: [0,0,0,0,0,0,0,0,0,0,53,10,0,3,36,9,3,5,11,8,16,19,13,11] },
-  stars:  { dates: , cumulative: , users:  }
+  views:  { dates: ["2026-03-22","2026-03-23","2026-03-24","2026-03-25","2026-03-26","2026-03-27","2026-03-28","2026-03-29","2026-03-30","2026-03-31","2026-04-01","2026-04-02","2026-04-03","2026-04-04","2026-04-05","2026-04-06","2026-04-07","2026-04-08","2026-04-09","2026-04-10","2026-04-11","2026-04-12","2026-04-13","2026-04-14","2026-04-15","2026-04-16","2026-04-17","2026-04-18","2026-04-19","2026-04-20","2026-04-21"], total: [0,0,0,0,0,0,0,0,0,0,50,9,3,0,4,0,2,0,0,2,0,0,3,0,9,37,3,0,6,5,7], unique: [0,0,0,0,0,0,0,0,0,0,3,4,1,0,2,0,1,0,0,2,0,0,1,0,5,4,2,0,6,5,4] },
+  clones: { dates: ["2026-03-22","2026-03-23","2026-03-24","2026-03-25","2026-03-26","2026-03-27","2026-03-28","2026-03-29","2026-03-30","2026-03-31","2026-04-01","2026-04-02","2026-04-03","2026-04-04","2026-04-05","2026-04-06","2026-04-07","2026-04-08","2026-04-09","2026-04-10","2026-04-11","2026-04-12","2026-04-13","2026-04-14","2026-04-15","2026-04-16","2026-04-17","2026-04-18","2026-04-19","2026-04-20","2026-04-21"], total: [0,0,0,0,0,0,0,0,0,0,78,13,0,3,94,31,8,15,23,19,30,41,20,25,27,70,7,4,5,6,6], unique: [0,0,0,0,0,0,0,0,0,0,53,10,0,3,36,9,3,5,11,8,16,19,13,11,10,30,3,1,2,3,3] },
+  stars:  { dates: , cumulative: , users:  },
+  psGallery: { dates: , totalDl:  },
+  releases: [{"date":"2026-04-01","version":"v0.5.0"}]
 };
-var refData = { labels: ["statics.teams.cdn.office.net","github.com","Bing"], views: [26,24,5], uniques: [2,3,4] };
-var pathData = { labels: ["/","/pull/1","/blob/main/docs/BUILD-Get-AzPaaSAvailability.md","/tree/master/AzPaaSAvailability","/blob/master/Get-AzPaaSAvailability.ps1","/pulls","/tree/master","/pulse","/pull/2","/tree/main"], views: [24,5,4,4,3,3,3,2,2,2] };
+var refData = { labels: ["statics.teams.cdn.office.net","github.com","Bing"], views: [38,14,9], uniques: [8,3,9] };
+var pathData = { labels: ["/","/blob/main/AzPaaSAvailability/Public/Get-AzServiceTierAvailability.ps1","/tree/main/AzPaaSAvailability","/tree/main","/deployments/github-pages","/blob/main/Get-AzPaaSAvailability.ps1","/pull/8","/blob/main/AzPaaSAvailability/Public/Get-AzAksAvailability.ps1","/blob/main/AzPaaSAvailability/Public/Get-AzPaaSAvailability.ps1","/tree/main/AzPaaSAvailability/Private"], views: [23,10,6,4,3,2,2,2,2,2] };
 initDashboard(allData, refData, pathData);
 </script>
 </body>
