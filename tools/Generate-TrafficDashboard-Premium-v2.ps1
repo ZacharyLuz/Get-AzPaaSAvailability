@@ -90,20 +90,28 @@ Write-Host "Loaded: $($views.Count) view days, $($clones.Count) clone days, $($s
 #endregion
 
 #region Build JSON — use @() to guarantee arrays for ConvertTo-Json
-$viewDates    = @($views  | ForEach-Object { $_.Date })            | ConvertTo-Json -Compress -AsArray
-$viewTotals   = @($views  | ForEach-Object { [int]$_.TotalViews }) | ConvertTo-Json -Compress -AsArray
-$viewUniques  = @($views  | ForEach-Object { [int]$_.UniqueViews })| ConvertTo-Json -Compress -AsArray
+# PowerShell's ConvertTo-Json produces no output for empty arrays piped in.
+# This helper ensures we always get valid JSON array syntax.
+function ConvertTo-SafeJsonArray {
+    param([array]$Data)
+    if ($Data.Count -eq 0) { return '[]' }
+    return $Data | ConvertTo-Json -Compress -AsArray
+}
 
-$cloneDates   = @($clones | ForEach-Object { $_.Date })             | ConvertTo-Json -Compress -AsArray
-$cloneTotals  = @($clones | ForEach-Object { [int]$_.TotalClones }) | ConvertTo-Json -Compress -AsArray
-$cloneUniques = @($clones | ForEach-Object { [int]$_.UniqueClones })| ConvertTo-Json -Compress -AsArray
+$viewDates    = ConvertTo-SafeJsonArray @($views  | ForEach-Object { $_.Date })
+$viewTotals   = ConvertTo-SafeJsonArray @($views  | ForEach-Object { [int]$_.TotalViews })
+$viewUniques  = ConvertTo-SafeJsonArray @($views  | ForEach-Object { [int]$_.UniqueViews })
 
-$starDates      = @($stars | ForEach-Object { $_.Date })               | ConvertTo-Json -Compress -AsArray
-$starCumulative = @($stars | ForEach-Object { [int]$_.CumulativeStars })| ConvertTo-Json -Compress -AsArray
-$starUsers      = @($stars | ForEach-Object { $_.User })               | ConvertTo-Json -Compress -AsArray
+$cloneDates   = ConvertTo-SafeJsonArray @($clones | ForEach-Object { $_.Date })
+$cloneTotals  = ConvertTo-SafeJsonArray @($clones | ForEach-Object { [int]$_.TotalClones })
+$cloneUniques = ConvertTo-SafeJsonArray @($clones | ForEach-Object { [int]$_.UniqueClones })
 
-$psGalleryDates   = @($psGallery | ForEach-Object { $_.Date })                | ConvertTo-Json -Compress -AsArray
-$psGalleryTotalDl = @($psGallery | ForEach-Object { [long]$_.TotalDownloads })| ConvertTo-Json -Compress -AsArray
+$starDates      = ConvertTo-SafeJsonArray @($stars | ForEach-Object { $_.Date })
+$starCumulative = ConvertTo-SafeJsonArray @($stars | ForEach-Object { [int]$_.CumulativeStars })
+$starUsers      = ConvertTo-SafeJsonArray @($stars | ForEach-Object { $_.User })
+
+$psGalleryDates   = ConvertTo-SafeJsonArray @($psGallery | ForEach-Object { $_.Date })
+$psGalleryTotalDl = ConvertTo-SafeJsonArray @($psGallery | ForEach-Object { [long]$_.TotalDownloads })
 
 # Build release annotations from actual GitHub release publish dates
 $releaseAnnotations = @($releases | ForEach-Object {
@@ -112,14 +120,14 @@ $releaseAnnotations = @($releases | ForEach-Object {
         version = $_.TagName
     }
 })
-$releasesJson = $releaseAnnotations | ConvertTo-Json -Compress -AsArray
+$releasesJson = ConvertTo-SafeJsonArray $releaseAnnotations
 
-$refLabels  = @($referrers | ForEach-Object { $_.Referrer })           | ConvertTo-Json -Compress -AsArray
-$refViews   = @($referrers | ForEach-Object { [int]$_.TotalViews })    | ConvertTo-Json -Compress -AsArray
-$refUniques = @($referrers | ForEach-Object { [int]$_.UniqueVisitors }) | ConvertTo-Json -Compress -AsArray
+$refLabels  = ConvertTo-SafeJsonArray @($referrers | ForEach-Object { $_.Referrer })
+$refViews   = ConvertTo-SafeJsonArray @($referrers | ForEach-Object { [int]$_.TotalViews })
+$refUniques = ConvertTo-SafeJsonArray @($referrers | ForEach-Object { [int]$_.UniqueVisitors })
 
-$pathLabels = @($paths | ForEach-Object { $_.Path -replace '^/ZacharyLuz/Get-AzPaaSAvailability', '' -replace '^$', '/' }) | ConvertTo-Json -Compress -AsArray
-$pathViews  = @($paths | ForEach-Object { [int]$_.TotalViews }) | ConvertTo-Json -Compress -AsArray
+$pathLabels = ConvertTo-SafeJsonArray @($paths | ForEach-Object { $_.Path -replace '^/ZacharyLuz/Get-AzPaaSAvailability', '' -replace '^$', '/' })
+$pathViews  = ConvertTo-SafeJsonArray @($paths | ForEach-Object { [int]$_.TotalViews })
 
 # All-time totals (default to 0 when arrays are empty)
 $totalViewsAllTime  = if ($views.Count -gt 0) { ($views  | ForEach-Object { [int]$_.TotalViews }  | Measure-Object -Sum).Sum } else { 0 }
