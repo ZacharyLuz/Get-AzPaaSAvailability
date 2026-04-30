@@ -15,7 +15,7 @@ param(
     [string[]]$Region,
     [ValidateSet('USEastWest', 'USCentral', 'USMajor', 'Europe', 'AsiaPacific', 'Global', 'USGov', 'China', 'ASR-EastWest', 'ASR-CentralUS')]
     [string]$RegionPreset,
-    [ValidateSet('SqlDatabase', 'CosmosDB', 'All')]
+    [ValidateSet('SqlDatabase', 'CosmosDB', 'PostgreSQL', 'MySQL', 'AppService', 'ContainerApps', 'AKS', 'Functions', 'Storage', 'NetAppFiles', 'All')]
     [string]$Service = 'All',
     [ValidateSet('GeneralPurpose', 'BusinessCritical', 'Hyperscale')]
     [string[]]$Edition,

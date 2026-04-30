@@ -38,6 +38,7 @@ function Get-AzSqlAvailability {
         ServerQuotaUsed, ServerQuotaLimit, VCoreQuotaUsed, VCoreQuotaLimit
     #>
     [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'FetchPricing', Justification = 'Public parameter is preserved for pricing support parity while SQL pricing is implemented in the orchestrator path.')]
     param(
         [Parameter(Mandatory)][string[]]$Region,
 

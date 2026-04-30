@@ -13,9 +13,10 @@ function Get-AksOrchestrators {
     )
 
     $uri = "$ArmUrl/subscriptions/$SubscriptionId/providers/Microsoft.ContainerService/locations/$Region/orchestrators?api-version=$ApiVersion&resource-type=managedClusters"
+    $headers = @{ Authorization = "Bearer $AccessToken" }
 
     $response = Invoke-WithRetry -MaxRetries $MaxRetries -OperationName "AKS Orchestrators ($Region)" -ScriptBlock {
-        Invoke-RestMethod -Uri $uri -Headers @{ Authorization = "Bearer $AccessToken" } -Method GET -TimeoutSec 30
+        Invoke-RestMethod -Uri $uri -Headers $headers -Method GET -TimeoutSec 30
     }
 
     $results = [System.Collections.Generic.List[PSCustomObject]]::new()

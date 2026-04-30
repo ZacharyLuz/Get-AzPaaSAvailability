@@ -4,14 +4,13 @@ function Get-AzPaaSAvailability {
         Scans Azure PaaS service availability, capacity, quota, and pricing across regions.
     .DESCRIPTION
         Orchestrator function that calls service-specific scan functions and renders
-        a unified display with cross-service summary. Supports SQL Database, SQL MI,
-        and Cosmos DB. Objects are always emitted to the pipeline.
+        a unified display with cross-service summary.
     .PARAMETER Region
         One or more Azure region codes to scan.
     .PARAMETER RegionPreset
         Predefined region set (USEastWest, USMajor, Europe, etc.).
     .PARAMETER Service
-        Which service(s) to scan: SqlDatabase, CosmosDB, or All (default).
+        Which service(s) to scan, or All (default).
     .PARAMETER Edition
         Filter SQL editions.
     .PARAMETER ComputeModel
@@ -38,7 +37,7 @@ function Get-AzPaaSAvailability {
         Get-AzPaaSAvailability -Service SqlDatabase -Edition Hyperscale -Region eastus
         Scans only Hyperscale SQL availability.
     .OUTPUTS
-        [PSCustomObject] with SqlSkus, SqlUsages, CosmosDbLocations, and ScanMetadata.
+        [PSCustomObject] with service-specific result collections and ScanMetadata.
     #>
     [CmdletBinding()]
     param(
@@ -47,7 +46,7 @@ function Get-AzPaaSAvailability {
         [ValidateSet('USEastWest', 'USCentral', 'USMajor', 'Europe', 'AsiaPacific', 'Global', 'USGov', 'China', 'ASR-EastWest', 'ASR-CentralUS')]
         [string]$RegionPreset,
 
-        [ValidateSet('SqlDatabase', 'CosmosDB', 'PostgreSQL', 'MySQL', 'AppService', 'ContainerApps', 'AKS', 'Functions', 'Storage', 'All')]
+        [ValidateSet('SqlDatabase', 'CosmosDB', 'PostgreSQL', 'MySQL', 'AppService', 'ContainerApps', 'AKS', 'Functions', 'Storage', 'NetAppFiles', 'All')]
         [string]$Service = 'All',
 
         [ValidateSet('GeneralPurpose', 'BusinessCritical', 'Hyperscale')]
@@ -105,6 +104,7 @@ function Get-AzPaaSAvailability {
     $scanAks = $Service -in @('AKS', 'All')
     $scanFunctions = $Service -in @('Functions', 'All')
     $scanStorage = $Service -in @('Storage', 'All')
+    $scanNetAppFiles = $Service -in @('NetAppFiles', 'All')
     $endpoints = Resolve-AzureEndpoints -EnvironmentName $Environment
     $icons = Resolve-IconSet
     $scanStart = Get-Date
@@ -122,6 +122,7 @@ function Get-AzPaaSAvailability {
         if ($scanAks) { $serviceList += 'AKS' }
         if ($scanFunctions) { $serviceList += 'Functions' }
         if ($scanStorage) { $serviceList += 'Storage' }
+        if ($scanNetAppFiles) { $serviceList += 'Azure NetApp Files' }
 
         $filters = @()
         if ($Edition) { $filters += "Editions: $($Edition -join ', ')" }
@@ -218,6 +219,13 @@ function Get-AzPaaSAvailability {
         if ($Environment) { $stParams.Environment = $Environment }
         $storageResults = Get-AzStorageAvailability @stParams
     }
+
+    $netAppResults = @()
+    if ($scanNetAppFiles) {
+        $netAppParams = @{ Region = $Region; MaxRetries = $MaxRetries; Quiet = [bool]$Quiet }
+        if ($Environment) { $netAppParams.Environment = $Environment }
+        $netAppResults = Get-AzNetAppFilesAvailability @netAppParams
+    }
     #endregion
 
     #region Display (non-Quiet)
@@ -306,8 +314,29 @@ function Get-AzPaaSAvailability {
             else { Write-Host 'All scanned regions are accessible.' -ForegroundColor Green }
         }
 
+        # Azure NetApp Files display
+        if ($scanNetAppFiles -and $netAppResults.Count -gt 0) {
+            Write-Host ''
+            Write-Host ('=' * $outputWidth) -ForegroundColor Gray
+            Write-Host 'AZURE NETAPP FILES REGION ACCESS' -ForegroundColor Cyan
+            Write-Host ('=' * $outputWidth) -ForegroundColor Gray
+
+            $netAppHeaderFmt = "{0,-18} {1,5} {2,-12} {3,-18} {4,-14} {5,-28}"
+            Write-Host ($netAppHeaderFmt -f 'Region', 'Zones', 'Status', 'Proximity', 'TiB Used/Limit', 'Action') -ForegroundColor White
+            Write-Host ('-' * $outputWidth) -ForegroundColor DarkGray
+
+            foreach ($netAppRegion in ($netAppResults | Sort-Object Region)) {
+                $tibDisplay = if ($null -ne $netAppRegion.TotalTiBsUsed -and $null -ne $netAppRegion.TotalTiBsLimit) { "$($netAppRegion.TotalTiBsUsed)/$($netAppRegion.TotalTiBsLimit)" } else { '-' }
+                $zoneDisplay = if ($netAppRegion.ZoneCount -gt 0) { $netAppRegion.AvailabilityZones } else { '-' }
+                $rowColor = if ($netAppRegion.ActionRequired -ne 'None' -or $netAppRegion.Status -eq 'Unavailable') { 'Red' } elseif ($netAppRegion.Status -eq 'Unknown') { 'Yellow' } else { 'Green' }
+
+                Write-Host ($netAppHeaderFmt -f $netAppRegion.Region, $zoneDisplay, $netAppRegion.Status, $netAppRegion.StorageToNetworkProximity, $tibDisplay, $netAppRegion.ActionRequired) -ForegroundColor $rowColor
+            }
+            Write-Host ('-' * $outputWidth) -ForegroundColor DarkGray
+        }
+
         # Region Health Matrix (when multiple services scanned)
-        $scannedCount = @($scanSql, $scanCosmos, $scanPostgreSql, $scanMySql, $scanAppService, $scanContainerApps, $scanAks, $scanFunctions, $scanStorage) | Where-Object { $_ }
+        $scannedCount = @($scanSql, $scanCosmos, $scanPostgreSql, $scanMySql, $scanAppService, $scanContainerApps, $scanAks, $scanFunctions, $scanStorage, $scanNetAppFiles) | Where-Object { $_ }
         if ($scannedCount.Count -ge 2) {
             $matrixData = [PSCustomObject]@{
                 SqlSkus           = $sqlResults
@@ -319,6 +348,7 @@ function Get-AzPaaSAvailability {
                 AksVersions       = $aksResults
                 FunctionStacks    = $funcResults
                 StorageSkus       = $storageResults
+                NetAppFiles       = $netAppResults
                 ScanMetadata      = [PSCustomObject]@{ Regions = $Region }
             }
             Show-AzPaaSRegionMatrix -ScanResult $matrixData -Icons $icons
@@ -336,6 +366,7 @@ function Get-AzPaaSAvailability {
         if ($scanAks) { $stats += "AKS: $($aksResults.Count) versions" }
         if ($scanFunctions) { $stats += "Functions: $($funcResults.Count) stacks" }
         if ($scanStorage) { $stats += "Storage: $($storageResults.Count) SKUs" }
+        if ($scanNetAppFiles) { $stats += "Azure NetApp Files: $($netAppResults.Count) regions" }
         Write-ScanComplete -Elapsed $elapsed -StatsLines $stats -RegionCount $Region.Count
     }
     #endregion
@@ -351,6 +382,7 @@ function Get-AzPaaSAvailability {
         AksVersions        = $aksResults
         FunctionStacks     = $funcResults
         StorageSkus        = $storageResults
+        NetAppFiles        = $netAppResults
         ScanMetadata       = [PSCustomObject]@{
             Version      = $version
             Regions      = $Region
@@ -363,7 +395,8 @@ function Get-AzPaaSAvailability {
                 $(if ($scanContainerApps) { 'ContainerApps' }),
                 $(if ($scanAks) { 'AKS' }),
                 $(if ($scanFunctions) { 'Functions' }),
-                $(if ($scanStorage) { 'Storage' })
+                $(if ($scanStorage) { 'Storage' }),
+                $(if ($scanNetAppFiles) { 'NetAppFiles' })
             ) | Where-Object { $_ }
             ScanDuration = [math]::Round(((Get-Date) - $scanStart).TotalSeconds, 1)
             GeneratedAt  = (Get-Date -Format 'o')

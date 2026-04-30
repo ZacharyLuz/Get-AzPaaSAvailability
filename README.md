@@ -24,7 +24,7 @@ The author is a Microsoft employee; however, this is a **personal open-source pr
 |------|--------|
 | [Get-AzVMAvailability](https://github.com/zacharyluz/Get-AzVMAvailability) | VM SKUs (IaaS compute) |
 | [Get-AzAIModelAvailability](https://github.com/zacharyluz/Get-AzAIModelAvailability) | AI models (Cognitive Services) |
-| **Get-AzPaaSAvailability** | **PaaS services (24 services)** |
+| **Get-AzPaaSAvailability** | **PaaS services (25 services)** |
 
 ## Installation
 
@@ -55,6 +55,9 @@ Get-AzSqlAvailability -Region eastus -Edition Hyperscale
 # Check Cosmos DB subscription access
 Get-AzCosmosDBAvailability -Region eastus,westeurope
 
+# Check Azure NetApp Files region access, zones, and quota headroom
+Get-AzNetAppFilesAvailability -Region eastus,westus2
+
 # Pipeline mode (objects only, no display)
 $results = Get-AzPaaSAvailability -Region westus2 -Quiet
 $results.SqlSkus | Where-Object { $_.ZoneRedundant }
@@ -79,9 +82,9 @@ $results | Export-AzPaaSAvailabilityReport -Path C:\Temp
 .\Get-AzPaaSAvailability.ps1 -Region eastus -NoPrompt -JsonOutput
 ```
 
-## Services Covered (24 total)
+## Services Covered (25 total)
 
-### Tier 1 — Dedicated Capabilities API (9 services)
+### Tier 1 — Dedicated Capabilities / Regional Capacity API (10 services)
 
 | Service | Cmdlet | What You Get |
 |---------|--------|-------------|
@@ -94,6 +97,7 @@ $results | Export-AzPaaSAvailabilityReport -Path C:\Temp
 | AKS | `Get-AzAksAvailability` | Kubernetes versions, preview/GA status, upgrade paths |
 | Functions | `Get-AzFunctionsAvailability` | Runtime stacks, versions, deprecation dates, platform (Linux/Windows) |
 | Storage | `Get-AzStorageAvailability` | SKUs per region with tier, kind, zones, restrictions |
+| Azure NetApp Files | `Get-AzNetAppFilesAvailability` | Regional access, logical zones, storage-to-network proximity, quota limits, usage |
 
 ### Tier 2-4 — Pricing API Validation (15 services)
 
@@ -126,9 +130,9 @@ When scanning multiple services, the orchestrator renders a unified matrix:
 
 ```
 REGION HEALTH MATRIX — All Services
-Region           | SQL         Cosmos      PgSQL       MySQL       AppSvc      ContApp     AKS         Funcs       Storage
-eastus           | ⚠ 0         ✗ BLOCK     -           -           ✓ 9         ✓ 12        ✓ 25        ✓ 50        ✓ 26
-westus2          | ✓ 160       ✓ OK        ✓ 71        ✓ 213       ✓ 9         ✓ 11        ✓ 25        ✓ 50        ✓ 26
+Region           | SQL         Cosmos      PgSQL       MySQL       AppSvc      ContApp     AKS         Funcs       Storage     ANF
+eastus           | ⚠ 0         ✗ BLOCK     -           -           ✓ 9         ✓ 12        ✓ 25        ✓ 50        ✓ 26        ✓ AZ3
+westus2          | ✓ 160       ✓ OK        ✓ 71        ✓ 213       ✓ 9         ✓ 11        ✓ 25        ✓ 50        ✓ 26        ✓ AZ3
 ```
 
 ## Module Architecture
@@ -137,7 +141,7 @@ westus2          | ✓ 160       ✓ OK        ✓ 71        ✓ 213       ✓ 9
 AzPaaSAvailability/
 ├── AzPaaSAvailability.psd1              # Module manifest
 ├── AzPaaSAvailability.psm1              # Auto-loader
-├── Public/                               # 13 exported functions
+├── Public/                               # 14 exported functions
 │   ├── Get-AzPaaSAvailability.ps1       # Orchestrator (all services + display)
 │   ├── Get-AzSqlAvailability.ps1
 │   ├── Get-AzCosmosDBAvailability.ps1
@@ -148,6 +152,7 @@ AzPaaSAvailability/
 │   ├── Get-AzAksAvailability.ps1
 │   ├── Get-AzFunctionsAvailability.ps1
 │   ├── Get-AzStorageAvailability.ps1
+│   ├── Get-AzNetAppFilesAvailability.ps1
 │   ├── Get-AzServiceTierAvailability.ps1
 │   ├── Show-AzPaaSRegionMatrix.ps1
 │   └── Export-AzPaaSAvailabilityReport.ps1
@@ -171,13 +176,14 @@ AzPaaSAvailability/
 # Run all tests
 Invoke-Pester ./tests -Output Detailed
 
-# 51 tests covering:
+# Pester tests covering:
 # - Helper functions (SafeString, GeoGroup, Icons, StatusColor)
 # - SQL capabilities parsing (System filter, status filter, AHUB, zones, editions)
 # - SQL quota parsing (ServerQuota, vCore quota)
 # - Cosmos DB access detection (full access, blocked, AZ-only, residency)
 # - PostgreSQL capabilities (editions, zones, memory calc, storage)
 # - MySQL capabilities (versions, SKUs, storage, geo-backup)
+# - Azure NetApp Files region info, zones, quota limits, and usages
 ```
 
 ## License

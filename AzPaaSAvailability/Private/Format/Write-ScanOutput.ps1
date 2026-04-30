@@ -56,6 +56,7 @@ function Write-StatusKey {
     .SYNOPSIS
         Writes the color-coded status key legend.
     #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'OutputWidth', Justification = 'Keeps the display helper signature aligned with banner/footer helpers.')]
     param([int]$OutputWidth = 113)
 
     Write-Host "STATUS KEY:" -ForegroundColor DarkGray -NoNewline

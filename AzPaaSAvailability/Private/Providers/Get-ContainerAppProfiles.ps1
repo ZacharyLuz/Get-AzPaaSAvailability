@@ -16,18 +16,19 @@ function Get-ContainerAppProfiles {
     )
 
     $uri = "$ArmUrl/subscriptions/$SubscriptionId/providers/Microsoft.App/locations/$Region/availableManagedEnvironmentsWorkloadProfileTypes?api-version=$ApiVersion"
+    $headers = @{ Authorization = "Bearer $AccessToken" }
 
     $response = Invoke-WithRetry -MaxRetries $MaxRetries -OperationName "Container Apps Profiles ($Region)" -ScriptBlock {
-        Invoke-RestMethod -Uri $uri -Headers @{ Authorization = "Bearer $AccessToken" } -Method GET -TimeoutSec 30
+        Invoke-RestMethod -Uri $uri -Headers $headers -Method GET -TimeoutSec 30
     }
 
     $results = [System.Collections.Generic.List[PSCustomObject]]::new()
-    foreach ($profile in $response.value) {
-        $p = $profile.properties
+    foreach ($workloadProfile in $response.value) {
+        $p = $workloadProfile.properties
         $results.Add([PSCustomObject]@{
             Region      = $Region
             Service     = 'ContainerApps'
-            ProfileName = $profile.name
+            ProfileName = $workloadProfile.name
             DisplayName = $p.displayName
             Category    = $p.category
             Cores       = [int]$p.cores

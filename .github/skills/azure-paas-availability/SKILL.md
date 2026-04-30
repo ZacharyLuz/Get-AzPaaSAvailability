@@ -1,6 +1,6 @@
 ---
 name: azure-paas-availability
-description: "Scan Azure regions for real-time PaaS service availability, SKUs, capacity, quota, and pricing using Get-AzPaaSAvailability. USE FOR: where can I deploy SQL Database, check Cosmos DB region access, PostgreSQL SKU availability, MySQL flexible server tiers, App Service plans per region, Container Apps workload profiles, AKS Kubernetes versions, Functions runtime stacks, Storage SKUs per region, compare PaaS across regions, zone redundancy check, PaaS region matrix, which PaaS services available in a region. DO NOT USE FOR: VM SKU scanning (use azure-vm-availability), AI model availability (use Get-AzAIModelAvailability), deploying PaaS resources (use azure-prepare), general Azure service recommendations without login."
+description: "Scan Azure regions for real-time PaaS service availability, SKUs, capacity, quota, and pricing using Get-AzPaaSAvailability. USE FOR: where can I deploy SQL Database, check Cosmos DB region access, PostgreSQL SKU availability, MySQL flexible server tiers, App Service plans per region, Container Apps workload profiles, AKS Kubernetes versions, Functions runtime stacks, Storage SKUs per region, Azure NetApp Files region access, ANF logical zones, NetApp quota headroom, compare PaaS across regions, zone redundancy check, PaaS region matrix, which PaaS services available in a region. DO NOT USE FOR: VM SKU scanning (use azure-vm-availability), AI model availability (use Get-AzAIModelAvailability), deploying PaaS resources (use azure-prepare), general Azure service recommendations without login."
 license: MIT
 metadata:
   author: Zachary Luz
@@ -27,6 +27,7 @@ Invoke this skill when the user wants to:
 - See **AKS** Kubernetes version availability and upgrade paths per region
 - Check **Functions** runtime stacks, versions, and deprecation dates
 - See **Storage** SKUs per region with tier, kind, zone redundancy, and restrictions
+- Check **Azure NetApp Files** regional access, logical zones, storage-to-network proximity, and quota headroom
 - Validate **static-tier services** (Redis, Event Hubs, Service Bus, AI Search, APIM, etc.)
 - Compare PaaS service coverage across multiple regions in a **Region Health Matrix**
 - Export availability data to CSV/XLSX for reporting or planning
@@ -331,9 +332,9 @@ selection and extra flags not on the module function:
 
 ---
 
-## Services Covered (24 Total)
+## Services Covered (25 Total)
 
-### Tier 1 — Dedicated Capabilities API (9 services)
+### Tier 1 — Dedicated Capabilities / Regional Capacity API (10 services)
 
 | Service | Cmdlet | Data |
 |---------|--------|------|
@@ -346,6 +347,7 @@ selection and extra flags not on the module function:
 | AKS | `Get-AzAksAvailability` | Kubernetes versions, preview/GA, upgrade paths |
 | Functions | `Get-AzFunctionsAvailability` | Runtime stacks, versions, deprecation, platform |
 | Storage | `Get-AzStorageAvailability` | SKUs per region with tier, kind, zones, restrictions |
+| Azure NetApp Files | `Get-AzNetAppFilesAvailability` | Regional access, logical zones, quota limits, usage |
 
 ### Tier 2-4 — Pricing API Validation (15 services via `Get-AzServiceTierAvailability`)
 
@@ -370,6 +372,7 @@ SignalR, Notification Hubs.
 | `AksVersions` | Array | AKS Kubernetes versions per region |
 | `FunctionStacks` | Array | Functions runtime stacks and versions |
 | `StorageSkus` | Array | Storage SKUs per region |
+| `NetAppFiles` | Array | Azure NetApp Files region access, zones, and quota headroom |
 | `ScanMetadata` | Object | Version, regions, timing, service count |
 
 ---

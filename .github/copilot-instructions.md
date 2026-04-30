@@ -13,12 +13,12 @@
 - `AzPaaSAvailability/`: Module directory
   - `AzPaaSAvailability.psd1`: Module manifest (v0.5.0)
   - `AzPaaSAvailability.psm1`: Auto-loader (Utility → Azure → Providers → Format → Public)
-  - `Public/`: 13 exported functions (orchestrator, 9 service scanners, matrix, tiers, export)
+  - `Public/`: 14 exported functions (orchestrator, 10 service scanners, matrix, tiers, export)
   - `Private/Azure/`: Bearer token, retry, endpoints, pricing
-  - `Private/Providers/`: 11 provider-specific API functions
+  - `Private/Providers/`: 12 provider-specific API functions
   - `Private/Format/`: Display output formatting
   - `Private/Utility/`: SafeString, GeoGroup, StatusIcon, IconSet
-- `tests/`: 51 Pester tests across 4 files
+- `tests/`: Pester tests for helper, database, Cosmos DB, and NetApp Files functions
 - `docs/`: Build guide and service inventory
 
 ## Build, Test, and Run

@@ -31,9 +31,10 @@ function Get-CosmosDbLocationAccess {
     )
 
     $uri = "$ArmUrl/subscriptions/$SubscriptionId/providers/Microsoft.DocumentDB/locations?api-version=$ApiVersion"
+    $headers = @{ Authorization = "Bearer $AccessToken" }
 
     $response = Invoke-WithRetry -MaxRetries $MaxRetries -OperationName 'Cosmos DB Locations' -ScriptBlock {
-        Invoke-RestMethod -Uri $uri -Headers @{ Authorization = "Bearer $AccessToken" } -Method GET -TimeoutSec 60
+        Invoke-RestMethod -Uri $uri -Headers $headers -Method GET -TimeoutSec 60
     }
 
     $results = [System.Collections.Generic.List[PSCustomObject]]::new()

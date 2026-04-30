@@ -16,6 +16,7 @@ function Export-AzPaaSAvailabilityReport {
         Export-AzPaaSAvailabilityReport -ScanResult $r -Path C:\Temp
     #>
     [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseProcessBlockForPipelineCommand', '', Justification = 'Exporter handles a single scan result object and preserves existing direct-call behavior.')]
     param(
         [Parameter(Mandatory, ValueFromPipeline)][PSCustomObject]$ScanResult,
         [Parameter(Mandatory)][string]$Path,
@@ -81,15 +82,49 @@ function Export-AzPaaSAvailabilityReport {
         }
     }
 
+    # Build Azure NetApp Files export rows
+    $netAppRows = @()
+    if ($ScanResult.NetAppFiles -and $ScanResult.NetAppFiles.Count -gt 0) {
+        foreach ($netAppRegion in $ScanResult.NetAppFiles) {
+            $quotaSummary = @($netAppRegion.QuotaLimits | ForEach-Object { "$($_.Name): default=$($_.Default), current=$($_.Current), usage=$($_.Usage)" }) -join '; '
+            $usageSummary = @($netAppRegion.Usages | ForEach-Object { "$($_.Name): $($_.CurrentValue)/$($_.Limit) $($_.Unit)" }) -join '; '
+
+            $netAppRows += [PSCustomObject]@{
+                Region                    = $netAppRegion.Region
+                Status                    = $netAppRegion.Status
+                AvailabilityZones         = $netAppRegion.AvailabilityZones
+                ZoneCount                 = $netAppRegion.ZoneCount
+                StorageToNetworkProximity = $netAppRegion.StorageToNetworkProximity
+                TotalTiBsUsed             = $netAppRegion.TotalTiBsUsed
+                TotalTiBsLimit            = $netAppRegion.TotalTiBsLimit
+                TotalTiBsAvailable        = $netAppRegion.TotalTiBsAvailable
+                ActionRequired            = $netAppRegion.ActionRequired
+                QuotaLimits               = $quotaSummary
+                Usages                    = $usageSummary
+            }
+        }
+    }
+
     if ($useXlsx) {
         $xlsxFile = Join-Path $Path "AzPaaSAvailability-$timestamp.xlsx"
+        $createdWorkbook = $false
         if ($sqlRows.Count -gt 0) {
             $sqlRows | Export-Excel -Path $xlsxFile -WorksheetName 'SQL SKUs' -AutoSize -FreezeTopRow -AutoFilter
+            $createdWorkbook = $true
         }
         if ($cosmosRows.Count -gt 0) {
-            $cosmosRows | Export-Excel -Path $xlsxFile -WorksheetName 'Cosmos DB Access' -AutoSize -FreezeTopRow -AutoFilter -Append
+            $cosmosExportParams = @{ Path = $xlsxFile; WorksheetName = 'Cosmos DB Access'; AutoSize = $true; FreezeTopRow = $true; AutoFilter = $true }
+            if ($createdWorkbook) { $cosmosExportParams.Append = $true }
+            $cosmosRows | Export-Excel @cosmosExportParams
+            $createdWorkbook = $true
         }
-        Write-Host "Exported: $xlsxFile (SQL: $($sqlRows.Count) rows, Cosmos: $($cosmosRows.Count) rows)" -ForegroundColor Green
+        if ($netAppRows.Count -gt 0) {
+            $netAppExportParams = @{ Path = $xlsxFile; WorksheetName = 'NetApp Files'; AutoSize = $true; FreezeTopRow = $true; AutoFilter = $true }
+            if ($createdWorkbook) { $netAppExportParams.Append = $true }
+            $netAppRows | Export-Excel @netAppExportParams
+            $createdWorkbook = $true
+        }
+        Write-Host "Exported: $xlsxFile (SQL: $($sqlRows.Count) rows, Cosmos: $($cosmosRows.Count) rows, NetApp Files: $($netAppRows.Count) rows)" -ForegroundColor Green
     }
     else {
         if ($sqlRows.Count -gt 0) {
@@ -101,6 +136,11 @@ function Export-AzPaaSAvailabilityReport {
             $f = Join-Path $Path "AzPaaSAvailability-CosmosDB-$timestamp.csv"
             $cosmosRows | Export-Csv -Path $f -NoTypeInformation
             Write-Host "Cosmos DB: $f ($($cosmosRows.Count) rows)" -ForegroundColor Green
+        }
+        if ($netAppRows.Count -gt 0) {
+            $f = Join-Path $Path "AzPaaSAvailability-NetAppFiles-$timestamp.csv"
+            $netAppRows | Export-Csv -Path $f -NoTypeInformation
+            Write-Host "Azure NetApp Files: $f ($($netAppRows.Count) rows)" -ForegroundColor Green
         }
     }
 }

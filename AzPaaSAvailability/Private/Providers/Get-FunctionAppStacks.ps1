@@ -15,9 +15,10 @@ function Get-FunctionAppStacks {
     )
 
     $uri = "$ArmUrl/providers/Microsoft.Web/functionAppStacks?api-version=$ApiVersion"
+    $headers = @{ Authorization = "Bearer $AccessToken" }
 
     $response = Invoke-WithRetry -MaxRetries $MaxRetries -OperationName 'Function App Stacks' -ScriptBlock {
-        Invoke-RestMethod -Uri $uri -Headers @{ Authorization = "Bearer $AccessToken" } -Method GET -TimeoutSec 30
+        Invoke-RestMethod -Uri $uri -Headers $headers -Method GET -TimeoutSec 30
     }
 
     $results = [System.Collections.Generic.List[PSCustomObject]]::new()

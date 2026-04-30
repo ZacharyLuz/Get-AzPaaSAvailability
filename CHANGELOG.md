@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- `Get-AzNetAppFilesAvailability` — Azure NetApp Files regional availability, logical zones, storage-to-network proximity, quota limits, and usage.
+- `NetAppFiles` service support in `Get-AzPaaSAvailability`, Region Health Matrix, CSV/XLSX export, and wrapper script service validation.
+
 ## [0.5.0] - 2026-03-25
 
 ### Added

@@ -8,7 +8,7 @@ BeforeAll {
 Describe 'Get-SqlCapabilities' {
     BeforeAll {
         # Mock Invoke-WithRetry to return fake SQL capabilities data
-        function Invoke-WithRetry { param($ScriptBlock, $MaxRetries, $OperationName) & $ScriptBlock }
+        function Invoke-WithRetry { param($ScriptBlock, $MaxRetries, $OperationName) $null = $MaxRetries; $null = $OperationName; & $ScriptBlock }
     }
 
     Context 'SqlDatabase parsing' {
@@ -78,7 +78,7 @@ Describe 'Get-SqlCapabilities' {
 
 Describe 'Get-SqlSubscriptionUsages' {
     BeforeAll {
-        function Invoke-WithRetry { param($ScriptBlock, $MaxRetries, $OperationName) & $ScriptBlock }
+        function Invoke-WithRetry { param($ScriptBlock, $MaxRetries, $OperationName) $null = $MaxRetries; $null = $OperationName; & $ScriptBlock }
         Mock Invoke-RestMethod {
             return @{
                 value = @(

@@ -7,7 +7,7 @@ BeforeAll {
 
 Describe 'Get-PostgreSqlCapabilities' {
     BeforeAll {
-        function Invoke-WithRetry { param($ScriptBlock, $MaxRetries, $OperationName) & $ScriptBlock }
+        function Invoke-WithRetry { param($ScriptBlock, $MaxRetries, $OperationName) $null = $MaxRetries; $null = $OperationName; & $ScriptBlock }
         Mock Invoke-RestMethod {
             return @{
                 value = @(@{
@@ -74,7 +74,7 @@ Describe 'Get-PostgreSqlCapabilities' {
 
 Describe 'Get-MySqlCapabilities' {
     BeforeAll {
-        function Invoke-WithRetry { param($ScriptBlock, $MaxRetries, $OperationName) & $ScriptBlock }
+        function Invoke-WithRetry { param($ScriptBlock, $MaxRetries, $OperationName) $null = $MaxRetries; $null = $OperationName; & $ScriptBlock }
         Mock Invoke-RestMethod {
             return @{
                 value = @(@{

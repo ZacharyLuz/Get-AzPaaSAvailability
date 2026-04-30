@@ -34,7 +34,7 @@ function Show-AzPaaSRegionMatrix {
     # Build header
     $colWidth = 12
     $regionCol = 16
-    $services = @('SQL', 'Cosmos', 'PgSQL', 'MySQL', 'AppSvc', 'ContApp', 'AKS', 'Funcs', 'Storage')
+    $services = @('SQL', 'Cosmos', 'PgSQL', 'MySQL', 'AppSvc', 'ContApp', 'AKS', 'Funcs', 'Storage', 'ANF')
     $header = ("{0,-$regionCol}" -f 'Region') + ' | '
     $header += ($services | ForEach-Object { "{0,-$colWidth}" -f $_ }) -join ''
     Write-Host $header -ForegroundColor White
@@ -91,6 +91,15 @@ function Show-AzPaaSRegionMatrix {
         # Storage
         $stCount = @($ScanResult.StorageSkus | Where-Object { $_.Region -eq $regionCode }).Count
         $cell = if ($stCount -gt 0) { "$($Icons.Check) $stCount" } else { '-' }
+        $row += "{0,-$colWidth}" -f $cell
+
+        # Azure NetApp Files
+        $netApp = $ScanResult.NetAppFiles | Where-Object { $_.Region -eq $regionCode } | Select-Object -First 1
+        $cell = if ($netApp) {
+            if ($netApp.Status -eq 'Available' -and $netApp.ActionRequired -eq 'None') { "$($Icons.Check) AZ$($netApp.ZoneCount)" }
+            elseif ($netApp.Status -eq 'Unavailable') { $hasIssue = $true; "$($Icons.Error) NO" }
+            else { $hasIssue = $true; "$($Icons.Warning) ?" }
+        } else { '-' }
         $row += "{0,-$colWidth}" -f $cell
 
         $rowColor = if ($hasIssue) { 'Yellow' } else { 'Green' }

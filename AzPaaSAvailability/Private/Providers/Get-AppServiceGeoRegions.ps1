@@ -20,13 +20,14 @@ function Get-AppServiceGeoRegions {
         @('Free', 'Shared', 'Basic', 'Standard', 'Premium', 'PremiumV2', 'PremiumV3', 'Isolated', 'IsolatedV2')
     }
 
+    $headers = @{ Authorization = "Bearer $AccessToken" }
     $results = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     foreach ($sku in $skus) {
         $uri = "$ArmUrl/subscriptions/$SubscriptionId/providers/Microsoft.Web/geoRegions?sku=$sku&api-version=$ApiVersion"
         try {
             $response = Invoke-WithRetry -MaxRetries $MaxRetries -OperationName "App Service GeoRegions ($sku)" -ScriptBlock {
-                Invoke-RestMethod -Uri $uri -Headers @{ Authorization = "Bearer $AccessToken" } -Method GET -TimeoutSec 30
+                Invoke-RestMethod -Uri $uri -Headers $headers -Method GET -TimeoutSec 30
             }
             foreach ($region in $response.value) {
                 $regionCode = ($region.name -replace '\s', '').ToLower()
