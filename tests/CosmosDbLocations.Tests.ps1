@@ -7,7 +7,7 @@ BeforeAll {
 
 Describe 'Get-CosmosDbLocationAccess' {
     BeforeAll {
-        function Invoke-WithRetry { param($ScriptBlock, $MaxRetries, $OperationName) & $ScriptBlock }
+        function Invoke-WithRetry { param($ScriptBlock, $MaxRetries, $OperationName) $null = $MaxRetries; $null = $OperationName; & $ScriptBlock }
         Mock Invoke-RestMethod {
             return @{
                 value = @(

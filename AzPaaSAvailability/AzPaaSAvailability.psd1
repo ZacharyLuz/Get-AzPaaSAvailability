@@ -22,6 +22,7 @@
         'Get-AzAksAvailability'
         'Get-AzFunctionsAvailability'
         'Get-AzStorageAvailability'
+        'Get-AzNetAppFilesAvailability'
         'Show-AzPaaSRegionMatrix'
         'Get-AzServiceTierAvailability'
         'Export-AzPaaSAvailabilityReport'

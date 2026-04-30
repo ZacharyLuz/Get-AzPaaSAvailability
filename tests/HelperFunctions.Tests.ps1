@@ -57,21 +57,26 @@ Describe 'Resolve-IconSet' {
 
 Describe 'Get-StatusIcon' {
     BeforeAll {
-        $icons = @{ Check = '✓'; Warning = '⚠'; Error = '✗' }
+        function Get-TestIconSet { @{ Check = '✓'; Warning = '⚠'; Error = '✗' } }
     }
     It 'returns Check for boolean true' {
+        $icons = Get-TestIconSet
         Get-StatusIcon -Result $true -Icons $icons | Should -Be '✓'
     }
     It 'returns Error for boolean false' {
+        $icons = Get-TestIconSet
         Get-StatusIcon -Result $false -Icons $icons | Should -Be '✗'
     }
     It 'returns Check for Available status' {
+        $icons = Get-TestIconSet
         Get-StatusIcon -Result 'Available' -Icons $icons | Should -Be '✓'
     }
     It 'returns Warning for Visible status' {
+        $icons = Get-TestIconSet
         Get-StatusIcon -Result 'Visible' -Icons $icons | Should -Be '⚠'
     }
     It 'returns Error for Disabled status' {
+        $icons = Get-TestIconSet
         Get-StatusIcon -Result 'Disabled' -Icons $icons | Should -Be '✗'
     }
 }

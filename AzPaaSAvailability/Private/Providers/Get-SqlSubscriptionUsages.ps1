@@ -19,10 +19,11 @@ function Get-SqlSubscriptionUsages {
     )
 
     $uri = "$ArmUrl/subscriptions/$SubscriptionId/providers/Microsoft.Sql/locations/$Region/usages?api-version=$ApiVersion"
+    $headers = @{ Authorization = "Bearer $AccessToken" }
 
     try {
         $response = Invoke-WithRetry -MaxRetries $MaxRetries -OperationName "SQL Usages ($Region)" -ScriptBlock {
-            Invoke-RestMethod -Uri $uri -Headers @{ Authorization = "Bearer $AccessToken" } -Method GET -TimeoutSec 30
+            Invoke-RestMethod -Uri $uri -Headers $headers -Method GET -TimeoutSec 30
         }
 
         $usages = @{}

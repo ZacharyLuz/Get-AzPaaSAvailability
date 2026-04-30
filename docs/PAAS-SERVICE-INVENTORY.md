@@ -203,6 +203,19 @@ These services don't have per-SKU availability but have quota/capacity limits th
 
 ---
 
+### 14a. Azure NetApp Files ✅ IMPLEMENTED
+
+| API | Endpoint | What It Returns |
+|-----|----------|----------------|
+| **Region info** | `GET .../Microsoft.NetApp/locations/{r}/regionInfos/default?api-version=2026-01-01` | Regional support, logical availability zone mappings, storage-to-network proximity |
+| **Quota limits** | `GET .../Microsoft.NetApp/locations/{r}/quotaLimits?api-version=2026-01-01` | Regional quota names, default quota, current quota, and usage where returned |
+| **Usages** | `GET .../Microsoft.NetApp/locations/{r}/usages?api-version=2026-01-01` | Current usage and limits, including regional total TiB headroom when returned |
+
+**Key fields:** `properties.availabilityZoneMappings[]`, `properties.storageToNetworkProximity`, `properties.currentValue`, `properties.limit`
+**Implementation complexity:** Low — one object per region with quota/usage summaries rather than SKU rows
+
+---
+
 ### 15. Azure API Management
 
 | API | Endpoint | What It Returns |
@@ -310,6 +323,7 @@ These services don't have SKU discovery APIs but can be validated by checking if
 - [ ] Event Hubs (tier availability + cluster quotas)
 - [ ] Service Bus (tier availability + MU quotas)
 - [ ] Azure Storage (SKU list + quotas per region)
+- [x] Azure NetApp Files (region access + zones + quota/usage)
 - [ ] Azure AI Search (static tiers + quota API)
 
 ### Phase 5 — Full Catalog (v0.5.0)
@@ -340,7 +354,7 @@ Target:
     "SqlDatabase", "CosmosDB",                          # Phase 1 ✅
     "PostgreSQL", "MySQL",                               # Phase 2
     "AppService", "ContainerApps", "Functions", "AKS",  # Phase 3
-    "EventHubs", "ServiceBus", "Storage", "AISearch",   # Phase 4
+    "EventHubs", "ServiceBus", "Storage", "NetAppFiles", "AISearch", # Phase 4
     "Redis", "APIM", "CognitiveServices", "ACR",        # Phase 5
     "All"
 )]
@@ -395,6 +409,7 @@ Target: ~3,000–3,500 lines (vs. 4,442 for the VM tool). Leaner because PaaS AP
 | Event Hubs | Microsoft.EventHub | N/A (static tiers) | Namespace limits | `Event Hubs` |
 | Service Bus | Microsoft.ServiceBus | N/A (static tiers) | Namespace limits | `Service Bus` |
 | Storage | Microsoft.Storage | `.../skus` | `.../locations/{r}/usages` | `Storage` |
+| Azure NetApp Files | Microsoft.NetApp | `.../locations/{r}/regionInfos/default` | `.../locations/{r}/quotaLimits`, `.../locations/{r}/usages` | TBD |
 | Redis | Microsoft.Cache | N/A (static SKUs) | N/A | `Azure Cache for Redis` |
 | AI Search | Microsoft.Search | N/A (static tiers) | `.../locations/{r}/usages` | `Azure AI Search` |
 | APIM | Microsoft.ApiManagement | N/A (static tiers) | Per-region limits | `API Management` |
