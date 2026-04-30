@@ -124,6 +124,10 @@ function Export-AzPaaSAvailabilityReport {
             $netAppRows | Export-Excel @netAppExportParams
             $createdWorkbook = $true
         }
+        if (-not $createdWorkbook) {
+            Write-Warning 'No exportable rows found; no XLSX file was created.'
+            return
+        }
         Write-Host "Exported: $xlsxFile (SQL: $($sqlRows.Count) rows, Cosmos: $($cosmosRows.Count) rows, NetApp Files: $($netAppRows.Count) rows)" -ForegroundColor Green
     }
     else {

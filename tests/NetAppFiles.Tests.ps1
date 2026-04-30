@@ -77,6 +77,60 @@ Describe 'Get-NetAppFilesRegionAvailability' {
         $result.ActionRequired | Should -Be 'None'
     }
 
+    It 'keeps quota limits empty when quota lookup fails' {
+        Mock Invoke-RestMethod {
+            if ($Uri -like '*/regionInfos/default*') {
+                return [PSCustomObject]@{ properties = [PSCustomObject]@{ storageToNetworkProximity = 'T2'; availabilityZoneMappings = @() } }
+            }
+
+            if ($Uri -like '*/quotaLimits*') { throw 'quota unavailable' }
+
+            return [PSCustomObject]@{
+                value = @(
+                    [PSCustomObject]@{
+                        name       = [PSCustomObject]@{ value = 'totalTiBsPerSubscription'; localizedValue = 'Total TiBs per Subscription' }
+                        properties = [PSCustomObject]@{ currentValue = 40; limit = 100; unit = 'TiB' }
+                    }
+                )
+            }
+        }
+
+        $result = Get-NetAppFilesRegionAvailability -Region 'eastus' -SubscriptionId 'sub' -AccessToken 'token'
+
+        $result.Status | Should -Be 'Unknown'
+        $result.QuotaLimits | Should -HaveCount 0
+        $result.Usages | Should -HaveCount 1
+        $result.ActionRequired | Should -Be 'Quota or usage lookup incomplete'
+    }
+
+    It 'keeps usages empty when usage lookup fails' {
+        Mock Invoke-RestMethod {
+            if ($Uri -like '*/regionInfos/default*') {
+                return [PSCustomObject]@{ properties = [PSCustomObject]@{ storageToNetworkProximity = 'T2'; availabilityZoneMappings = @() } }
+            }
+
+            if ($Uri -like '*/quotaLimits*') {
+                return [PSCustomObject]@{
+                    value = @(
+                        [PSCustomObject]@{
+                            name       = 'eastus/totalTiBsPerSubscription'
+                            properties = [PSCustomObject]@{ default = 25; current = 100; usage = 40 }
+                        }
+                    )
+                }
+            }
+
+            throw 'usage unavailable'
+        }
+
+        $result = Get-NetAppFilesRegionAvailability -Region 'eastus' -SubscriptionId 'sub' -AccessToken 'token'
+
+        $result.Status | Should -Be 'Unknown'
+        $result.QuotaLimits | Should -HaveCount 1
+        $result.Usages | Should -HaveCount 0
+        $result.ActionRequired | Should -Be 'Quota or usage lookup incomplete'
+    }
+
     It 'marks exhausted regional TiB quota as action required' {
         Mock Invoke-RestMethod {
             if ($Uri -like '*/regionInfos/default*') {

@@ -73,26 +73,30 @@ function Get-NetAppFilesRegionAvailability {
     $availableZones = @($availabilityZoneMappings | Where-Object { $_.isAvailable } | ForEach-Object { $_.availabilityZone })
 
     $quotaLimits = [System.Collections.Generic.List[PSCustomObject]]::new()
-    foreach ($quotaLimit in @($quotaResponse.value)) {
-        $quotaName = ($quotaLimit.name -split '/')[-1]
-        $quotaLimits.Add([PSCustomObject]@{
-            Name        = $quotaName
-            DisplayName = $quotaName
-            Default     = $quotaLimit.properties.default
-            Current     = $quotaLimit.properties.current
-            Usage       = $quotaLimit.properties.usage
-        })
+    if ($quotaResponse -and $quotaResponse.value) {
+        foreach ($quotaLimit in @($quotaResponse.value)) {
+            $quotaName = ($quotaLimit.name -split '/')[-1]
+            $quotaLimits.Add([PSCustomObject]@{
+                Name        = $quotaName
+                DisplayName = $quotaName
+                Default     = $quotaLimit.properties.default
+                Current     = $quotaLimit.properties.current
+                Usage       = $quotaLimit.properties.usage
+            })
+        }
     }
 
     $usages = [System.Collections.Generic.List[PSCustomObject]]::new()
-    foreach ($usageResult in @($usageResponse.value)) {
-        $usages.Add([PSCustomObject]@{
-            Name         = $usageResult.name.value
-            DisplayName  = $usageResult.name.localizedValue
-            CurrentValue = $usageResult.properties.currentValue
-            Limit        = $usageResult.properties.limit
-            Unit         = $usageResult.properties.unit
-        })
+    if ($usageResponse -and $usageResponse.value) {
+        foreach ($usageResult in @($usageResponse.value)) {
+            $usages.Add([PSCustomObject]@{
+                Name         = $usageResult.name.value
+                DisplayName  = $usageResult.name.localizedValue
+                CurrentValue = $usageResult.properties.currentValue
+                Limit        = $usageResult.properties.limit
+                Unit         = $usageResult.properties.unit
+            })
+        }
     }
 
     $totalTiBsUsage = @($usages | Where-Object { $_.Name -and $_.Name.ToLowerInvariant() -eq 'totaltibspersubscription' } | Select-Object -First 1)

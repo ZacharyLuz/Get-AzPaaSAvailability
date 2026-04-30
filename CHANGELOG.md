@@ -6,6 +6,9 @@
 - `Get-AzNetAppFilesAvailability` — Azure NetApp Files regional availability, logical zones, storage-to-network proximity, quota limits, and usage.
 - `NetAppFiles` service support in `Get-AzPaaSAvailability`, Region Health Matrix, CSV/XLSX export, and wrapper script service validation.
 
+### Fixed
+- Guard NetApp Files quota and usage parsing when partial API calls fail, and avoid reporting XLSX export success when no workbook is created.
+
 ## [0.5.0] - 2026-03-25
 
 ### Added
