@@ -346,9 +346,17 @@ These services don't have SKU discovery APIs but can be validated by checking if
 
 ### `-Service` Parameter Growth
 
-Current: `SqlDatabase | CosmosDB | All`
+Current:
 
-Target:
+```powershell
+[ValidateSet(
+    'SqlDatabase', 'CosmosDB', 'PostgreSQL', 'MySQL', 'AppService',
+    'ContainerApps', 'AKS', 'Functions', 'Storage', 'NetAppFiles', 'All'
+)]
+[string]$Service = 'All'
+```
+
+Potential future expansion:
 ```powershell
 [ValidateSet(
     "SqlDatabase", "CosmosDB",                          # Phase 1 ✅

@@ -9,6 +9,8 @@
     .\Get-AzPaaSAvailability.ps1 -Region eastus,westus2
 .EXAMPLE
     .\Get-AzPaaSAvailability.ps1 -Service SqlDatabase -Edition Hyperscale -RegionPreset USMajor
+.EXAMPLE
+    .\Get-AzPaaSAvailability.ps1 -Service NetAppFiles -Region eastus,westus2 -NoPrompt
 #>
 [CmdletBinding()]
 param(

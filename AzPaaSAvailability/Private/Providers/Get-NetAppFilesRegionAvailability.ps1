@@ -17,6 +17,12 @@ function Get-NetAppFilesRegionAvailability {
 
     $locationBaseUri = "$ArmUrl/subscriptions/$SubscriptionId/providers/Microsoft.NetApp/locations/$Region"
     $headers = @{ Authorization = "Bearer $AccessToken" }
+    $regionCodeHints = @{
+        central      = 'centralus'
+        northcentral = 'northcentralus'
+        southcentral = 'southcentralus'
+        westcentral  = 'westcentralus'
+    }
 
     try {
         $regionInfoUri = "$locationBaseUri/regionInfos/default?api-version=$ApiVersion"
@@ -26,6 +32,12 @@ function Get-NetAppFilesRegionAvailability {
     }
     catch {
         Write-Verbose "NetApp Files region info unavailable for $Region`: $($_.Exception.Message)"
+        $normalizedRegion = ($Region -replace '[\s-]', '').ToLowerInvariant()
+        $actionRequired = 'Region info unavailable'
+        if ($regionCodeHints.ContainsKey($normalizedRegion)) {
+            $actionRequired = "Region info unavailable - did you mean '$($regionCodeHints[$normalizedRegion])'?"
+        }
+
         return [PSCustomObject]@{
             Region                    = $Region
             Service                   = 'NetAppFiles'
@@ -38,7 +50,7 @@ function Get-NetAppFilesRegionAvailability {
             TotalTiBsLimit            = $null
             TotalTiBsUsed             = $null
             TotalTiBsAvailable        = $null
-            ActionRequired            = 'Region info unavailable'
+            ActionRequired            = $actionRequired
         }
     }
 

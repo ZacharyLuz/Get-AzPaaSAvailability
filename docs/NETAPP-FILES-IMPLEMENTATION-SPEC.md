@@ -125,7 +125,10 @@ Add focused Pester tests for the private provider parser:
 - Normalizes quota limits.
 - Normalizes usages.
 - Derives total TiB headroom.
+- Keeps quota limits empty when the quota API fails after region info succeeds.
+- Keeps usages empty when the usages API fails after region info succeeds.
 - Returns an unavailable object when region info fails.
+- Verifies XLSX export does not report success when no workbook is created.
 
 Run:
 
