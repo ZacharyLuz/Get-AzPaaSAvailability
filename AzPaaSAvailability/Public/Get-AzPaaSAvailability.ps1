@@ -36,6 +36,9 @@ function Get-AzPaaSAvailability {
     .EXAMPLE
         Get-AzPaaSAvailability -Service SqlDatabase -Edition Hyperscale -Region eastus
         Scans only Hyperscale SQL availability.
+    .EXAMPLE
+        Get-AzPaaSAvailability -Service NetAppFiles -Region eastus,westus2
+        Scans only Azure NetApp Files regional access, zones, and quota headroom.
     .OUTPUTS
         [PSCustomObject] with service-specific result collections and ScanMetadata.
     #>

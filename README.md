@@ -49,6 +49,8 @@ Import-Module ./AzPaaSAvailability
 # Scan all services in two regions
 Get-AzPaaSAvailability -Region eastus,westus2
 
+# Region values use ARM region codes, for example southcentralus, not southcentral
+
 # Scan just SQL Database
 Get-AzSqlAvailability -Region eastus -Edition Hyperscale
 
@@ -57,6 +59,9 @@ Get-AzCosmosDBAvailability -Region eastus,westeurope
 
 # Check Azure NetApp Files region access, zones, and quota headroom
 Get-AzNetAppFilesAvailability -Region eastus,westus2
+
+# Scan only Azure NetApp Files through the orchestrator
+Get-AzPaaSAvailability -Service NetAppFiles -Region eastus,westus2
 
 # Pipeline mode (objects only, no display)
 $results = Get-AzPaaSAvailability -Region westus2 -Quiet
@@ -78,9 +83,16 @@ $results | Export-AzPaaSAvailabilityReport -Path C:\Temp
 # SQL-focused scan with auto-export
 .\Get-AzPaaSAvailability.ps1 -Service SqlDatabase -Edition Hyperscale -AutoExport
 
+# Azure NetApp Files-focused scan
+.\Get-AzPaaSAvailability.ps1 -Service NetAppFiles -Region eastus,westus2 -NoPrompt
+
 # JSON output for automation
 .\Get-AzPaaSAvailability.ps1 -Region eastus -NoPrompt -JsonOutput
 ```
+
+## Usage Examples
+
+For common scan patterns, see [docs/usage-examples.md](docs/usage-examples.md).
 
 ## Services Covered (25 total)
 
@@ -156,9 +168,9 @@ AzPaaSAvailability/
 │   ├── Get-AzServiceTierAvailability.ps1
 │   ├── Show-AzPaaSRegionMatrix.ps1
 │   └── Export-AzPaaSAvailabilityReport.ps1
-└── Private/                              # 14 internal functions
+└── Private/                              # 21 internal functions
     ├── Azure/     (retry, endpoints, token, pricing)
-    ├── Providers/ (SQL, Cosmos, PgSQL, MySQL, AppSvc, ContainerApps, AKS, Functions, Storage, StaticTiers)
+    ├── Providers/ (SQL, Cosmos, PgSQL, MySQL, AppSvc, ContainerApps, AKS, Functions, Storage, NetApp, StaticTiers)
     ├── Format/    (banner, footer, status key, colors)
     └── Utility/   (SafeString, GeoGroup, StatusIcon, IconSet)
 ```

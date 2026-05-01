@@ -163,10 +163,22 @@ Describe 'Get-NetAppFilesRegionAvailability' {
             return [PSCustomObject]@{ value = @() }
         }
 
-        $result = Get-NetAppFilesRegionAvailability -Region 'antarctica' -SubscriptionId 'sub' -AccessToken 'token'
+        $result = Get-NetAppFilesRegionAvailability -Region 'invalidregion' -SubscriptionId 'sub' -AccessToken 'token'
 
         $result.Status | Should -Be 'Unavailable'
         $result.ActionRequired | Should -Be 'Region info unavailable'
         $result.ZoneCount | Should -Be 0
+    }
+
+    It 'suggests the ARM region code for common central US shorthand' {
+        Mock Invoke-RestMethod {
+            if ($Uri -like '*/regionInfos/default*') { throw 'Region not supported' }
+            return [PSCustomObject]@{ value = @() }
+        }
+
+        $result = Get-NetAppFilesRegionAvailability -Region 'southcentral' -SubscriptionId 'sub' -AccessToken 'token'
+
+        $result.Status | Should -Be 'Unavailable'
+        $result.ActionRequired | Should -Be "Region info unavailable - did you mean 'southcentralus'?"
     }
 }
