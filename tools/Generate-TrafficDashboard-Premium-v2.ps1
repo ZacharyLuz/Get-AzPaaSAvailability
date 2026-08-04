@@ -89,9 +89,12 @@ if (Test-Path $pathsPath) {
 Write-Host "Loaded: $($views.Count) view days, $($clones.Count) clone days, $($stars.Count) stars, $($referrers.Count) referrers, $($paths.Count) paths, $(@($releaseDownloads).Count) release download snapshots, $($releases.Count) releases, $($psGallery.Count) PSGallery snapshots" -ForegroundColor Cyan
 #endregion
 
-#region Build JSON — use @() to guarantee arrays for ConvertTo-Json
-# PowerShell's ConvertTo-Json produces no output for empty arrays piped in.
-# This helper ensures we always get valid JSON array syntax.
+#region Build JSON — ConvertTo-SafeJsonArray guarantees a literal [] on empty input
+# Piping an empty array to ConvertTo-Json emits nothing at all (the pipeline never
+# delivers an element, so -AsArray never fires). These values are interpolated
+# directly into the emitted JavaScript, so a $null here produces `labels: ,` —
+# a syntax error that blanks the whole dashboard. Any of these arrays can be
+# empty on a fresh repo or one with no referrer/PSGallery data yet.
 function ConvertTo-SafeJsonArray {
     param([array]$Data)
     if ($Data.Count -eq 0) { return '[]' }
